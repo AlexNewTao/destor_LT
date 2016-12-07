@@ -5,6 +5,9 @@
 #include "../storage/containerstore.h"
 #include "../recipe/recipestore.h"
 #include "../jcr.h"
+#include "../gc/gc_rtm.h"
+
+
 
 struct index_overhead index_overhead;
 
@@ -21,6 +24,15 @@ guint g_feature_hash(char *feature){
 	}
 	return hash;
 }
+
+
+
+static struct metaEntry* get_metaentry_in_container_meta(
+        struct containerMeta* cm, fingerprint *fp) {
+    return g_hash_table_lookup(cm->map, fp);
+}
+
+
 
 extern void init_segmenting_method();
 extern void init_sampling_method();
@@ -174,6 +186,23 @@ static void index_lookup_base(struct segment *s){
             int64_t id = fingerprint_cache_lookup(&c->fp);
             if(id != TEMPORARY_ID){
                 c->id = id;
+                ////2016.11.21.修改index_bit
+                //得到container id号了，然后根据container id找到指纹对应的偏移量；
+                //首先获得container meta
+               
+                struct containerMeta* cm = (struct containerMeta*) malloc(sizeof(struct containerMeta));
+                cm=retrieve_container_meta_by_id(c->id);
+                //根据containerMeta得到metaEntry
+                struct metaEntry* me=get_metaentry_in_container_meta(&cm, &c->fp);
+                //得到偏移量
+                int32_t index_shift =me->off;
+
+                //再通过id号在id_shift结构体中得到偏移量
+                struct _id_shift_type *head=NULL;
+                int start_shift=get_shift_by_id(head,c->id);
+
+                set_index_bit(index_shift+start_shift);
+
                 SET_CHUNK(c, CHUNK_DUPLICATE);
             }
         }
@@ -192,6 +221,19 @@ static void index_lookup_base(struct segment *s){
                      * since a partial key is possible in near-exact deduplication.
                      */
                     c->id = id;
+                   
+                    struct containerMeta* cm = (struct containerMeta*) malloc(sizeof(struct containerMeta));
+                    cm=retrieve_container_meta_by_id(c->id);
+                    //根据containerMeta得到metaEntry
+                    struct metaEntry* me=get_metaentry_in_container_meta(cm, c->fp);
+                    //得到偏移量
+                    int index_shift=me->off;
+
+                    //再通过id号在id_shift结构体中得到偏移量
+                    struct _id_shift_type *head;
+                    int start_shift=get_shift_by_id(head,c->id);
+                    set_index_bit(index_shift+start_shift);
+
                     SET_CHUNK(c, CHUNK_DUPLICATE);
                 }else{
                     NOTICE("Filter phase: A key collision occurs");

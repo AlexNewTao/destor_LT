@@ -16,10 +16,10 @@ time: 2016.11
 // 开始垃圾回收函数
 #include <stdio.h>
 #include <stdlib.h>
-#include "gc_rth.h"
+//#include "gc_rth.h"
+#include "gc.h"
 
-
-
+/*
 typedef struct gc_list_data
 {
 	int64_t gc_containerid;
@@ -63,16 +63,22 @@ gc_list_type *gc_list_AddEnd (gc_list_type *head,gc_list_data gc_data)
 }
 
 
+*/
 
 
-void start_garbage_collection()
+
+void gc_reference_time_map()
 {
-	garbage_collection_method_selection();
-
+	printf("we do garbage in the method of reference time map!\n");
 }
-
-
-
+void gc_reference_count()
+{
+	printf("we do garbage in the method of gc_reference_count!\n");
+}
+void gc_mark_and_sweep()
+{
+	printf("we do garbage in the method of gc_mark_and_sweep!\n");
+}
 //  3 选择不同的垃圾回收机制，给其他的垃圾回收方法留有接口
 
 void garbage_collection_method_selection()
@@ -82,21 +88,31 @@ void garbage_collection_method_selection()
 	printf("2:means reference_count method\n");
 	printf("3:means mark_and_sweep  method\n");
 	int choose;
-	scanf("%d",choose);
+	scanf("%d",&choose);
 	switch(choose)
 	{
 		case 1:
 			gc_reference_time_map();
+			break;
 		case 2:
 			gc_reference_count();
+			break;
 		case 3:
 			gc_mark_and_sweep();
+			break;
 		defalut:
 			printf("worry choose garbage collection method!\n");
 	}
 
 }
 
+void start_garbage_collection()
+{
+	garbage_collection_method_selection();
+
+}
+
+/*
 //采用RTM方法进行垃圾回收
 long gc_reference_time_map(int deleteversion)
 {
@@ -132,9 +148,10 @@ long gc_reference_time_map(int deleteversion)
 
 }
 
+*/
 
 
-
+/*
 //批量回收
 long patch_gc_reference_time_map(int deleteversion)
 {
@@ -166,6 +183,6 @@ long patch_gc_reference_time_map(int deleteversion)
 	return gc_count;
 }
 
-
+*/
 
 

@@ -6,6 +6,7 @@
  */
 
 #include "jcr.h"
+#include "gc/gc_rtm.h"
 
 struct jcr jcr;
 
@@ -67,6 +68,10 @@ void init_backup_jcr(char *path) {
 	init_jcr(path);
 
 	jcr.bv = create_backup_version(jcr.path);
+
+	current_bv=jcr.bv;
+	//container_bit_table的初始化。
+	init_container_bit_table(jcr.bv);
 
 	jcr.id = jcr.bv->bv_num;
 }

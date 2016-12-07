@@ -15,6 +15,12 @@
 #define CONTAINER_HEAD 16
 #define CONTAINER_META_ENTRY 28
 
+struct metaEntry {
+    int32_t off;
+    int32_t len;
+    fingerprint fp;
+};
+
 struct containerMeta {
 	containerid id;
 	int32_t data_size;

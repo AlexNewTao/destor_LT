@@ -7,6 +7,10 @@
 
 #include "../destor.h"
 #include "index.h"
+#include "../gc/gc_rtm.h"
+#include "../storage/containerstore.h"
+
+#include "../jcr.h"
 
 typedef char* kvpair;
 
@@ -15,11 +19,31 @@ typedef char* kvpair;
 
 static GHashTable *htable;
 
+
+
+extern GHashTable* id_shift_hash;
+extern struct _id_shift_type *head;
+
+
+
 static int32_t kvpair_size;
+
+static int globle_shift=0;
+
+
+static struct metaEntry* get_metaentry_in_container_meta(
+		struct containerMeta* cm, fingerprint *fp) {
+	return g_hash_table_lookup(cm->map, fp);
+}
+
+
 
 /*
  * Create a new kv pair.
  */
+
+
+
 static kvpair new_kvpair_full(char* key){
     kvpair kvp = malloc(kvpair_size);
     memcpy(get_key(kvp), key, destor.index_key_size);
@@ -56,7 +80,9 @@ static inline void free_kvpair(kvpair kvp){
 	free(kvp);
 }
 
-void init_kvstore_htable(){
+
+void init_kvstore_htable()
+{
     kvpair_size = destor.index_key_size + destor.index_value_length * 8;
 
     if(destor.index_key_size >=4)
@@ -69,16 +95,27 @@ void init_kvstore_htable(){
 	sds indexpath = sdsdup(destor.working_directory);
 	indexpath = sdscat(indexpath, "index/htable");
 
+
+	
+ 
+    init_id_shift();
+    init_id_shift_hash();
+    init_index_bit();
+
+
 	/* Initialize the feature index from the dump file. */
 	FILE *fp;
-	if ((fp = fopen(indexpath, "r"))) {
+	if ((fp = fopen(indexpath, "r"))) 
+	{
 		/* The number of features */
 		int key_num;
 		fread(&key_num, sizeof(int), 1, fp);
-		for (; key_num > 0; key_num--) {
+		for (; key_num > 0; key_num--) 
+		{
 			/* Read a feature */
 			kvpair kv = new_kvpair();
 			fread(get_key(kv), destor.index_key_size, 1, fp);
+
 
 			/* The number of segments/containers the feature refers to. */
 			int id_num, i;
@@ -86,9 +123,37 @@ void init_kvstore_htable(){
 			assert(id_num <= destor.index_value_length);
 
 			for (i = 0; i < id_num; i++)
+			{
 				/* Read an ID */
 				fread(&get_value(kv)[i], sizeof(int64_t), 1, fp);
 
+				int64_t f_id=get_value(kv);
+
+                //2016.11.16.在container store中，根据id号访问container元数据
+                struct containerMeta* cm=retrieve_container_meta_by_id(f_id);
+
+                //2016.11.17.首先要判断这个container id是不是已经存放在id_shift结构体中了。
+                //我们采用hash表来判断container id是不是已经存在了。
+                //直接调用glib中的hash库来操作。
+               
+                if (!g_hash_table_lookup(id_shift_hash,&f_id))
+                {
+                    //添加到hash表中
+                    g_hash_table_add(id_shift_hash,&f_id);
+
+                    int container_chunk_number=cm->chunk_num;
+
+                    //2016.11.16.追加到id_shift结构体的尾部
+                    struct _id_shift_type *is = (struct _id_shift_type*)malloc(sizeof(struct _id_shift_type));
+                    is->id_shift_data.container_id=f_id;
+                    is->id_shift_data.chunk_shift=globle_shift;
+
+                    struct _id_shift_type *head=_id_shift_AddEnd(head,is->id_shift_data);
+
+                    //把初始的chunk偏移量往后移动
+                    globle_shift=globle_shift+container_chunk_number;
+                }
+			}
 			g_hash_table_insert(htable, get_key(kv), kv);
 		}
 		fclose(fp);
@@ -96,6 +161,16 @@ void init_kvstore_htable(){
 
 	sdsfree(indexpath);
 }
+
+
+
+
+
+
+
+
+
+
 
 void close_kvstore_htable() {
 	sds indexpath = sdsdup(destor.working_directory);
@@ -163,12 +238,42 @@ void kvstore_htable_update(char* key, int64_t id) {
 	if (!kv) {
 		kv = new_kvpair_full(key);
 		g_hash_table_replace(htable, get_key(kv), kv);
+
+		int64_t f_id=get_value(kv);
+
+		//在container store中，根据id号访问container元数据
+        struct containerMeta* cm=retrieve_container_meta_by_id(f_id);
+
+        //首先要判断这个container id是不是已经存放在id_shift结构体中了。
+        //我们采用hash表来判断container id是不是已经存在了。
+        //直接调用glib中的hash库来操作。
+                
+
+        if (!g_hash_table_lookup(id_shift_hash,&f_id))
+        {
+            //添加到hash表中
+            g_hash_table_add(id_shift_hash,&f_id);
+
+            int container_chunk_number=cm->chunk_num;
+
+            //追加到id_shift结构体的尾部
+            struct _id_shift_type *is = (struct _id_shift_type*)malloc(sizeof(struct _id_shift_type));
+            is->id_shift_data.container_id=f_id;
+            is->id_shift_data.chunk_shift=globle_shift;
+
+            struct _id_shift_type *head=_id_shift_AddEnd(head,is->id_shift_data);
+
+            //把初始的chunk偏移量往后移动
+            globle_shift=globle_shift+container_chunk_number;
+		}  
 	}
 	kv_update(kv, id);
 }
 
+
 /* Remove the 'id' from the kvpair identified by 'key' */
-void kvstore_htable_delete(char* key, int64_t id){
+void kvstore_htable_delete(char* key, int64_t id)
+{
 	kvpair kv = g_hash_table_lookup(htable, key);
 	if(!kv)
 		return;
@@ -198,7 +303,8 @@ void kvstore_htable_delete(char* key, int64_t id){
 	/*
 	 * If all IDs are deleted, the kvpair is removed.
 	 */
-	if(value[0] == TEMPORARY_ID){
+	if(value[0] == TEMPORARY_ID)
+	{
 		/* This kvpair can be removed. */
 		g_hash_table_remove(htable, key);
 	}

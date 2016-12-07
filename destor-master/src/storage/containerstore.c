@@ -2,8 +2,10 @@
 #include "../utils/serial.h"
 #include "../utils/sync_queue.h"
 #include "../jcr.h"
+#include "../gc/gc_rtm.h"
 
 static int64_t container_count = 0;
+
 static FILE* fp;
 /* Control the concurrent accesses to fp. */
 static pthread_mutex_t mutex;
@@ -12,12 +14,9 @@ static pthread_t append_t;
 
 static SyncQueue* container_buffer;
 
-struct metaEntry {
-	int32_t off;
-	int32_t len;
-	fingerprint fp;
-};
 
+//extern int64_t container_count_start;
+//extern int64_t container_count_end;
 /*
  * We must ensure a container is either in the buffer or written to disks.
  */
@@ -50,6 +49,8 @@ void init_container_store() {
 
 	if ((fp = fopen(containerfile, "r+"))) {
 		fread(&container_count, 8, 1, fp);
+		container_count_start=container_count;
+
 	} else if (!(fp = fopen(containerfile, "w+"))) {
 		perror(
 				"Can not create container.pool for read and write because");
@@ -73,8 +74,12 @@ void close_container_store() {
 	pthread_join(append_t, NULL);
 	NOTICE("append phase stops successfully!");
 
+	update_container_bit_table(current_bv);
+
 	fseek(fp, 0, SEEK_SET);
 	fwrite(&container_count, sizeof(container_count), 1, fp);
+
+	container_count_end=container_count;
 
 	fclose(fp);
 	fp = NULL;

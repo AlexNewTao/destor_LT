@@ -9,6 +9,7 @@
 #include "jcr.h"
 #include "index/index.h"
 #include "storage/containerstore.h"
+#include "gc/gc.h"
 
 extern void do_backup(char *path);
 //extern void do_delete(int revision);
@@ -22,7 +23,7 @@ extern void load_config_from_string(sds config);
 /* : means argument is required.
  * :: means argument is required and no space.
  */
-const char * const short_options = "sr::t::p::h";
+const char * const short_options = "sr::t::p::h::g";
 
 struct option long_options[] = {
 		{ "state", 0, NULL, 's' },
@@ -46,6 +47,9 @@ void usage() {
 
 	puts("\tMake a trance");
 	puts("\t\tdestor -t /path/to/data");
+
+	puts("\tstart a garbage collection job");
+	puts("\t\tdestor -g");
 
 	puts("\tParameter");
 	puts("\t\t-p\"a line in config file\"");
@@ -268,8 +272,10 @@ int main(int argc, char **argv) {
 	int revision = -1;
 
 	int opt = 0;
+	
 	while ((opt = getopt_long(argc, argv, short_options, long_options, NULL))
 			!= -1) {
+		
 		switch (opt) {
 		case 'r':
 			job = DESTOR_RESTORE;
@@ -282,11 +288,19 @@ int main(int argc, char **argv) {
 			job = DESTOR_MAKE_TRACE;
 			break;
 		case 'h':
+		{
+			
 			usage();
 			break;
+		}
 		case 'p': {
 			sds param = sdsnew(optarg);
 			load_config_from_string(param);
+			break;
+		}
+		case 'g':{//用来表示垃圾回收；
+			job = DESTOR_GARBAGE_COLLECTION;
+			printf("parementer g!\n");
 			break;
 		}
 		default:
@@ -349,10 +363,16 @@ int main(int argc, char **argv) {
 		sdsfree(path);
 		break;
 	}
+	case DESTOR_GARBAGE_COLLECTION:{
+			//执行垃圾回收;
+			start_garbage_collection();
+			break;
+		}
 	default:
 		fprintf(stderr, "Invalid job type!\n");
 		usage();
 	}
+	
 	destor_shutdown();
 
 	return 0;

@@ -4,6 +4,7 @@
 #include "index/index.h"
 #include "backup.h"
 #include "storage/containerstore.h"
+#include "gc/gc_rtm.h"
 
 /* defined in index.c */
 extern struct {
@@ -65,6 +66,8 @@ void do_backup(char *path) {
 	close_index();
 	close_container_store();
 	close_recipe_store();
+	
+	close_id_shift_and_hashtable();
 
 	update_backup_version(jcr.bv);
 

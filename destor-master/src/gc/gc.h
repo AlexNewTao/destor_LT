@@ -14,35 +14,38 @@ time: 2016.11
 #ifndef GC_H
 #define GC_H
 
-//垃圾回收的触发过程
-void gc_trigger();
+/*
+typedef struct gc_list_data
+{
+	int64_t gc_containerid;
+	int32_t gc_chunk_shift;
 
-//开始垃圾回收过程；
+};
+
+typedef struct gc_list_type
+{
+	struct gc_list_data gc_data;
+	struct gc_list_type *next;
+};
+
+
+static int64_t gc_count=0;
+
+gc_list_type *gc_list_AddEnd (gc_list_type *head,gc_list_data gc_data);
+*/
 void start_garbage_collection();
 
-//初始化
-void gc_init();
+void garbage_collection_method_selection();
 
-//采用reference_time_map的方式进行垃圾回收
-long gc_reference_time_map(deleteversion);
+void gc_reference_time_map();
 
-//
-list *get_RTM_check_list();
+void gc_reference_count();
+void gc_mark_and_sweep();
+//long gc_reference_time_map(int deleteversion);
 
-void check_RTM();
-
-//批量回收
-long patch_gc(deleteversion);
+//long patch_gc_reference_time_map(int deleteversion);
 
 
-//删除数据
-void delete_data();
-
-//删除元数据
-
-void delete_meta_data(delete_list);
-
-void garbage_collection_free() 
 
 
 

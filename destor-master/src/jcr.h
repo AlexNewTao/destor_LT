@@ -10,6 +10,7 @@
 
 #include "destor.h"
 #include "recipe/recipestore.h"
+#include "gc/gc_rtm.h"
 
 #define JCR_STATUS_INIT 1
 #define JCR_STATUS_RUNNING 2
