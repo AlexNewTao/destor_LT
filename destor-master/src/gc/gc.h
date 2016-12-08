@@ -32,7 +32,7 @@ struct gc_list_type *gchead;
 
 //static int64_t gc_count=0;
 
-struct gc_list_type *gc_list_AddEnd (struct gc_list_type *gchead,struct gc_list_data gc_data);
+struct gc_list_type *gc_list_AddEnd (struct gc_list_type *gchead,struct gc_list_data *gc_data);
 
 void start_garbage_collection();
 
