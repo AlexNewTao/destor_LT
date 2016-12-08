@@ -29,15 +29,16 @@ static void* append_thread(void *arg) {
 
 
 		//在这里我来加上RTM的数据，并且，添加到RTM中。
-        int len=c->containerMeta.chunk_num;
+        int len=c->meta.chunk_num;
         int16_t *array=(int16_t*)malloc(len*sizeof(int16_t));
-        for (int i = 0; i < len; i++)
+        int i;
+        for (i = 0; i < len; i++)
         {
-            array[i]=current_bv;
+            array[i]=(int16_t)current_bv;
         }
         struct RTMdata *temp;
         temp=(struct RTMdata *)malloc(sizeof(struct RTMdata));
-        temp->id=c->containerMeta.id;
+        temp->id=c->meta.id;
         temp->len=len;
         temp->rtm=array;
         RTMlist_AddEnd(temp);
@@ -90,7 +91,7 @@ void close_container_store() {
 	pthread_join(append_t, NULL);
 	NOTICE("append phase stops successfully!");
 
-	update_container_bit_table(current_bv);
+	update_container_bit_table_and_RTM(current_bv);
 
 	fseek(fp, 0, SEEK_SET);
 	fwrite(&container_count, sizeof(container_count), 1, fp);

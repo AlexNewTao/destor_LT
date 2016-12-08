@@ -14,7 +14,7 @@ time: 2016.11
 #ifndef GC_H
 #define GC_H
 
-/*
+
 typedef struct gc_list_data
 {
 	int64_t gc_containerid;
@@ -28,11 +28,12 @@ typedef struct gc_list_type
 	struct gc_list_type *next;
 };
 
+struct gc_list_type *gchead;
 
 static int64_t gc_count=0;
 
-gc_list_type *gc_list_AddEnd (gc_list_type *head,gc_list_data gc_data);
-*/
+struct gc_list_type *gc_list_AddEnd (struct gc_list_type *gchead,struct gc_list_data gc_data);
+
 void start_garbage_collection();
 
 void garbage_collection_method_selection();
@@ -41,9 +42,11 @@ void gc_reference_time_map();
 
 void gc_reference_count();
 void gc_mark_and_sweep();
-//long gc_reference_time_map(int deleteversion);
 
-//long patch_gc_reference_time_map(int deleteversion);
+
+int64_t gc_reference_time_map(int deleteversion);
+
+int64_t patch_gc_reference_time_map(int deleteversion);
 
 
 

@@ -21,6 +21,7 @@ reference_time_map的初始化，更新，得到实际gc的reference_time_map。
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <glib.h>
 
 //=======================id_shift======================
 //首先定义id_shift记录索引中的container，以及对应的偏移量
@@ -30,6 +31,12 @@ reference_time_map的初始化，更新，得到实际gc的reference_time_map。
 
 int64_t container_count_start;
 int64_t container_count_end;
+
+//GHashTable* id_shift_hash;
+
+struct _id_shift_type* ishead;
+
+struct RTMdata* RTMhead;
 
 struct _id_shift
 {
@@ -47,7 +54,7 @@ struct _id_shift_type
 
 void init_id_shift();
 //在id_shift的链表中追加结点；
-struct _id_shift_type *_id_shift_AddEnd (struct _id_shift_type *head,struct _id_shift id_shift_data);
+struct _id_shift_type *_id_shift_AddEnd (struct _id_shift_type *ishead,struct _id_shift id_shift_data);
 
 
 
@@ -55,14 +62,14 @@ void destory_id_shift_hash();
 
 void close_id_shift_and_hashtable();
 
-struct _id_shift_type *_id_shift_AddEnd (struct _id_shift_type *head,struct _id_shift id_shift_data);
+struct _id_shift_type *_id_shift_AddEnd (struct _id_shift_type *ishead,struct _id_shift id_shift_data);
 
 //2016.11.17.根据给定的container id查找id_shift,找到对应container初始的偏移量。
 //_id_shift_type *id_shift_find_node(_id_shift_type *head,containerid id);
 
-int get_shift_by_id(struct _id_shift_type *head,int64_t id);
+int get_shift_by_id(struct _id_shift_type *ishead,int64_t id);
 
-int get_next_shift_by_id(struct _id_shift_type *head,int64_t id);
+int get_next_shift_by_id(struct _id_shift_type *ishead,int64_t id);
 
 //释放空间
 void Destory_id_shift();
@@ -128,7 +135,7 @@ void set_container_bit_table(int n, int zero_or_one);
 //部分引用为10
 //完全引用为11
 
-void update_container_bit_table(int backupversion);
+void update_container_bit_table_and_RTM(int backupversion);
 
 int get_attribute(int64_t id);
 
@@ -169,14 +176,17 @@ struct RTMdata
 };
 
 
+
+void Init_RTM();
+
 void read_RTM_from_disk() ;
 
 void write_RTM_to_disk() ;
 
-RTMlist* Init_RTMlist();
+struct RTMdata* Init_RTMlist();
 
 
-void RTMlist_AddEnd (RTMdata rtmdata);
+void RTMlist_AddEnd (struct RTMdata* rtmdata);
 
 void update_reference_time_map(int64_t id);
 
@@ -195,12 +205,12 @@ int* get_newest_container_bit_table(int last);
 int get_CBT(int n);
 
 
-void update_RTM_to_same_backupversion(int n,int backupversion,RTMdata *RTMhead);
+void update_RTM_to_same_backupversion(int n,int backupversion,struct RTMdata *RTMhead);
 
 
-void check_last_container_bit_table(int* a,int n, RTMdata *RTMhead);
+void check_last_container_bit_table(int*a,int n, struct RTMdata *RTMhead);
 
-RTMdata* get_real_reference_time_map(RTMldata *RTMhead);
+struct RTMdata* get_real_reference_time_map(struct RTMdata *RTMhead);
 
 
 #endif

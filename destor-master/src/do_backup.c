@@ -22,6 +22,8 @@ void do_backup(char *path) {
 	init_container_store();
 	init_index();
 
+	Init_RTM();
+
 	init_backup_jcr(path);
 
 	puts("==== backup begin ====");
@@ -66,11 +68,13 @@ void do_backup(char *path) {
 	close_index();
 	close_container_store();
 	close_recipe_store();
-	
+
 	close_id_shift_and_hashtable();
 
+	write_RTM_to_disk();
+
 	update_backup_version(jcr.bv);
-	
+
 	free_backup_version(jcr.bv);
 
 	puts("==== backup end ====");

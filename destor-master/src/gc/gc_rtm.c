@@ -4,12 +4,16 @@
 #include "gc_rtm.h"
 #include "../jcr.h"
 #include "../utils/sds.h"
+#include <glib.h>
+
+
 
 #define SHIFT 5
 #define MASK 0x1F
 GHashTable* id_shift_hash;
 
-struct _id_shift_type *ishead;
+struct _id_shift_type* ishead;
+
 static FILE* fp;
 
 
@@ -84,7 +88,7 @@ void Destory_id_shift()
     struct _id_shift_type *p = ishead;
     while(ishead!=NULL)
     {
-         p = head;
+         p = ishead;
          free(p);
          ishead = ishead->next;
     }
@@ -115,8 +119,8 @@ struct _id_shift_type *_id_shift_AddEnd (struct _id_shift_type *ishead,struct _i
         node->next=NULL;//设置结点指针为空，即为表尾；
         if (ishead==NULL)
         {
-            head=node;
-            return head;
+            ishead=node;
+            return ishead;
         }
         htemp=ishead;
         while(htemp->next!=NULL)
@@ -313,10 +317,10 @@ void set_container_bit_table(int n,int zero_or_one)
 //完全引用为11
 int current_bv;
 
-void update_container_bit_table(int backupversion)
+void update_container_bit_table_and_RTM(int backupversion)
 {
 	struct _id_shift_type *htemp;
-	htemp=head;
+	htemp=ishead;
 	if(CBT[0]!=backupversion)
 	{
 		printf("the backupversion doesn't match in the CBT\n");
@@ -334,10 +338,10 @@ void update_container_bit_table(int backupversion)
     	update_container_bit_table_attribute(shift,attribute);
 
 
-    	/*if (attribute==1)
+    	if (attribute==1)
     	{
-    		update_reference_time_map(head,id);
-    	}*/
+    		update_reference_time_map(id);
+    	}
     	
 
         htemp=htemp->next;
@@ -361,8 +365,8 @@ void update_container_bit_table(int backupversion)
 //根据container的id号，得到container相对于上一个版本的属性
 int get_attribute(int64_t id)
 {
-	int start=get_shift_by_id(head,id);
-	int end=get_next_shift_by_id(head,id)-1;
+	int start=get_shift_by_id(ishead,id);
+	int end=get_next_shift_by_id(ishead,id)-1;
 	int flag=check_index_bit_equal_one(start,end);
 	if (flag==0) //全部为0
 	{
@@ -509,7 +513,7 @@ int* get_newest_container_bit_map(int backupversion)
 }
 //===============================reference_time_map=====================
 
-struct RTMdata
+/*struct RTMdata
 {
 	int64_t id;
 	int16_t len;
@@ -517,13 +521,43 @@ struct RTMdata
 	struct RTMdata* next;
 };
 
-struct RTMdata *RTMhead;
+struct RTMdata *RTMhead;*/
 
 /*struct RTMlist
 {
 	RTMdata rtmdata;
 	struct RTMlist *next;
 };*/
+
+void Init_RTM()
+{
+	sds CBTpath = sdsdup(destor.working_directory);
+    CBTpath = sdscat(CBTpath, "/reference_time_map/");
+
+    sds cbt_fname = sdsdup(CBTpath);
+    cbt_fname = sdscat(cbt_fname, "reference_time_map");
+
+    FILE *fp;
+	if (!(fp = fopen(cbt_fname, "w")))
+	{
+		RTMhead=Init_RTMlist();
+	}
+	else
+	{
+		read_RTM_from_disk() ;
+	}
+}
+
+struct RTMdata* Init_RTMlist()
+{
+    struct RTMdata *L;
+    L = (struct RTMdata *)malloc(sizeof(struct RTMdata));   //申请结点空间 
+    if(L == NULL)                       //判断是否有足够的内存空间 
+        printf("申请内存空间失败\n");
+    L->next=NULL;
+    printf("Init_RTMlist successfully!\n");             
+ 	return L;
+}
 
 void write_RTM_to_disk() 
 {
@@ -537,15 +571,15 @@ void write_RTM_to_disk()
 
     if((fp = fopen(cbt_fname, "w"))) 
     {
-    	while(head!=NULL)
+    	while(RTMhead!=NULL)
     	{
-    		fwrite(&head->id, sizeof(int64_t), 1, fp);
-    		fwrite(&head->len, sizeof(int), 1, fp);
-    		fwrite(&head->rtm, sizeof(int16_t), len, fp);
-    		struct RTMdata* tmp = head;
+    		fwrite(&RTMhead->id, sizeof(int64_t), 1, fp);
+    		fwrite(&RTMhead->len, sizeof(int), 1, fp);
+    		fwrite(&RTMhead->rtm, sizeof(int16_t), RTMhead->len, fp);
+    		struct RTMdata* tmp = RTMhead;
     		free(tmp->rtm);
     		free(tmp);
-    		head = head->next;
+    		RTMhead = RTMhead->next;
     	}
         fclose(fp);
     }
@@ -563,7 +597,7 @@ void read_RTM_from_disk()
     cbt_fname = sdscat(cbt_fname, "reference_time_map");
 
     FILE *fp;
-    struct RTMdata *head = NULL;
+    struct RTMdata *RTMhead = NULL;
 
     if((fp = fopen(cbt_fname, "r"))) 
     {
@@ -571,9 +605,9 @@ void read_RTM_from_disk()
     	while(!feof(fp))
     	{
 
-    		if(head == NULL){
+    		if(RTMhead == NULL){
     			tmp = (struct RTMdata*)malloc(sizeof(struct RTMdata));
-    			head = tmp;
+    			RTMhead = tmp;
     		}else{
     			tmp->next = (struct RTMdata*)malloc(sizeof(struct RTMdata));
     			tmp = tmp->next;
@@ -582,7 +616,7 @@ void read_RTM_from_disk()
     		fread(&tmp->id, sizeof(tmp->id), 1, fp);
     		fread(&tmp->len, sizeof(tmp->len), 1, fp);
     		tmp->rtm = (int16_t*)malloc(sizeof(int16_t) * tmp->len);
-    		fread(&tmp->rtm, sizof(int16_t), tmp->len, fp);
+    		fread(&tmp->rtm, sizeof(int16_t), tmp->len, fp);
     		tmp->next = NULL;
     	}
     	
@@ -590,37 +624,27 @@ void read_RTM_from_disk()
     }
     sdsfree(cbt_fname);
     NOTICE("read_RTM_from_disk successfully");
-    return head;
 }
 
 
 //单链表的初始化
  
-RTMdata* Init_RTMlist()
-{
-    RTMdata *L;
-    L = (RTMdata *)malloc(sizeof(RTMdata));   //申请结点空间 
-    if(L == NULL)                       //判断是否有足够的内存空间 
-        printf("申请内存空间失败\n");
-    L->next=NULL;
-    printf("Init_RTMlist successfully!\n");             
- 	return L;
-}
 
 
-void RTMlist_AddEnd (RTMdata rtmdata)
+
+void RTMlist_AddEnd (struct RTMdata* rtmdata)
 {
-    RTMdata *node,*htemp;
-    if (!(node=(RTMlist *)malloc(sizeof(RTMlist))))//分配空间
+    struct RTMdata *node,*htemp;
+    if (!(node=(struct RTMdata *)malloc(sizeof(struct RTMdata))))//分配空间
     {
         printf("内存分配失败！\n");
         return NULL;
     }
     else
     {
-        node->id=rtmdata.id;//保存数据
-        node->rtm=rtmdata.rtm;//保存数据
-        node->len=rtmdata.len;//保存数据
+        node->id=rtmdata->id;//保存数据
+        node->rtm=rtmdata->rtm;//保存数据
+        node->len=rtmdata->len;//保存数据
 
         node->next=NULL;//设置结点指针为空，即为表尾；
         if (RTMhead==NULL)
@@ -642,16 +666,17 @@ void update_reference_time_map(int64_t id)
 	int start=get_shift_by_id(ishead,id);
 	int end=get_next_shift_by_id(ishead,id)-1;
 
-	RTMdata *tmphead=RTMhead->next;
+	struct RTMdata *tmphead=RTMhead->next;
 	while(tmphead!=NULL)
 	{
 		if (tmphead->id==id)
 		{
-			for (int i = 0; i < end-start; i++)
+			int i;
+			for ( i = 0; i < end-start; i++)
 			{
 				if (get_index_bit(start+i))
 				{
-					tmphead->rtmdata.rtm[i]=current_bv;
+					tmphead->rtm[i]=current_bv;
 				}
 			}
 			
@@ -692,7 +717,7 @@ void update_reference_time_map(int64_t id)
 
 int* get_newest_container_bit_table(int last)
 {
-	CBTpath = sdsdup(destor.working_directory);
+	sds CBTpath = sdsdup(destor.working_directory);
     CBTpath = sdscat(CBTpath, "/containerbittable/");
 
     sds cbt_fname = sdsdup(CBTpath);
@@ -728,33 +753,43 @@ int get_CBT(int n)
 	return CBT[index_loc]<<bit_loc;
 }
 
+int get_CBT_array(int n,int *array)
+{
+	int index_loc;
+	int bit_loc;
+	index_loc=n>>SHIFT;//等价于n/32。
+	bit_loc=n&MASK;//等价于n%32。
+	return array[index_loc]<<bit_loc;
+}
 
 
 //n means the number of n-th container 
-void update_RTM_to_same_backupversion(int n,int backupversion,RTMdata *RTMhead)
+void update_RTM_to_same_backupversion(int n,int backupversion,struct RTMdata *RTMhead)
 {
 	
-	RTMlist *htemp;
+	struct RTMdata *htemp;
 	htemp=RTMhead;
 	int i=0;
 	while(i<n)
 	{
-		htemp=htmp->next;
+		htemp=htemp->next;
 	}
 	int j=0;
 	while((htemp->rtm[j]!=backupversion)&&(j<htemp->len))
 	{
-		htemp->rtmdata.rtm[j]=backupversion;
+		htemp->rtm[j]=backupversion;
 		j++;
 	}
 }
 
 
+static int last=1;
 
+static int container_count=0;//用来记录访问的container的数目；
 
 //数组用来存放上次检测为00的位置；
 
-void check_last_container_bit_table(int* a,int n, RTMdata *RTMhead)
+void check_last_container_bit_table(int* a,int n, struct RTMdata *RTMhead)
 {
     int check_number=n;
     int* check_arr=get_newest_container_bit_table(last+1);
@@ -766,21 +801,21 @@ void check_last_container_bit_table(int* a,int n, RTMdata *RTMhead)
     while(j<n)
     {
 
-        if ((get_CBT(a[j],check_arr)==0)&&(get_CBT(a[j]+1,check_arr)==1)||(get_CBT(a[j],check_arr)==1)&&(get_CBT(a[j]+1,check_arr)==0))
+        if ((get_CBT_array(a[j],check_arr)==0)&&(get_CBT_array(a[j]+1,check_arr)==1)||(get_CBT_array(a[j],check_arr)==1)&&(get_CBT_array(a[j]+1,check_arr)==0))
         {
             check_number--;
             j++;
             continue;
         }
 
-        if ((get_CBT(a[j],check_arr)==1)&&(get_CBT(a[j],check_arr)==1))
+        if ((get_CBT_array(a[j],check_arr)==1)&&(get_CBT_array(a[j],check_arr)==1))
         {
             j++;
-            update_RTM_to_same_backupversion(container_count,bv,head);
+            update_RTM_to_same_backupversion(container_count,bv,RTMhead);
         }
 
         //属性为00
-        if ((get_CBT(a[j],check_arr)==0)&&(get_CBT(a[j],check_arr)==0))
+        if ((get_CBT_array(a[j],check_arr)==0)&&(get_CBT_array(a[j],check_arr)==0))
         {
         	j++;
             uncheck_container++;
@@ -790,43 +825,42 @@ void check_last_container_bit_table(int* a,int n, RTMdata *RTMhead)
 
     while(uncheck_container!=0)
     {
-        check_last_container_bit_table(zero_arr,uncheck_container,head)
+        check_last_container_bit_table(zero_arr,uncheck_container,RTMhead);
     }
 }
 
 
-RTMdata* get_real_reference_time_map(RTMdata *RTMhead)
+struct RTMdata* get_real_reference_time_map(struct RTMdata *RTMhead)
 {
-	int last=1;
+	
 	//首先得到最新版本的container_bit_table
-	int container_count=0;//用来记录访问的container的数目；
-
+	
 	int uncheck_container=0;//用来记录属性为00的container的数目。
 	int* arr;
 	arr=get_newest_container_bit_table(last);
 	
 	int *zero_arr;
-	
-	for (int i = 32; i < contaienr_count_end*2; i+2)
+	int i;
+	for ( i= 32; i < contaienr_count_end*2; i+2)
 	{
 		container_count++;
 
 		
 		//属性为01或者10
-		if((get_CBT(i,arr)==0)&&(get_CBT(i+1,arr)==1)||(get_CBT(i,arr)==1)&&(get_CBT(i+!,arr)==0))
+		if((get_CBT_array(i,arr)==0)&&(get_CBT_array(i+1,arr)==1)||(get_CBT_array(i,arr)==1)&&(get_CBT_array(i+1,arr)==0))
 		{
 			continue;
 		}
 
 		//属性为00
-		if ((get_CBT(i,arr)==0)&&(get_CBT(i+1,arr)==0))
+		if ((get_CBT_array(i,arr)==0)&&(get_CBT_array(i+1,arr)==0))
 		{
 			uncheck_container++;
 			zero_arr[uncheck_container]=container_count;
 		}
 
 		//属性为11
-		if ((get_CBT(i,arr)==1)&&(get_CBT(i+1,arr)==1))
+		if ((get_CBT_array(i,arr)==1)&&(get_CBT_array(i+1,arr)==1))
 		{
 			update_RTM_to_same_backupversion(container_count,current_bv,RTMhead);
 		}

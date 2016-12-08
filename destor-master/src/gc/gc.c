@@ -16,61 +16,41 @@ time: 2016.11
 // 开始垃圾回收函数
 #include <stdio.h>
 #include <stdlib.h>
-//#include "gc_rth.h"
+#include "gc_rth.h"
 #include "gc.h"
 
-/*
-typedef struct gc_list_data
-{
-	int64_t gc_containerid;
-	int32_t gc_chunk_shift;
-
-};
-
-typedef struct gc_list_type
-{
-	struct gc_list_data gc_data
-	struct gc_list_type *next;
-};
 
 static int64_t gc_count=0;
 
-gc_list_type *gc_list_AddEnd (gc_list_type *head,gc_list_data gc_data)
+struct gc_list_type *gc_list_AddEnd (struct gc_list_type *gchead,gc_list_data gc_data)
 {
-    gc_list_type *node,*htemp;
-    if (!(node=(gc_list_type *)malloc(sizeof(gc_list_type))))//分配空间
+    struct gc_list_type *node,*htemp;
+    if (!(node=(struct gc_list_type *)malloc(sizeof(struct gc_list_type))))//分配空间
     {
         printf("内存分配失败！\n");
         return NULL;
     }
     else
     {
-        node->gc_list_data=gc_data;//保存数据
-        node->next=NULL//设置结点指针为空，即为表尾；
-        if (head==NULL)
+        node->gc_list_data.gc_containerid=gc_data.gc_containerid;//保存数据
+        node->gc_list_data.gc_chunk_shift=gc_data.gc_chunk_shift;//保存数据
+        node->next=NULL;//设置结点指针为空，即为表尾；
+        if (gchead==NULL)
         {
-            head=node;
-            return head;
+            gchead=node;
+            return gchead;
         }
-        htemp=head;
+        htemp=gchead;
         while(htemp->next!=NULL)
         {
             htemp=htemp->next;
         }
         htemp->next=node;
-        return head;
+        return gchead;
     }
 }
 
 
-*/
-
-
-
-void gc_reference_time_map()
-{
-	printf("we do garbage in the method of reference time map!\n");
-}
 void gc_reference_count()
 {
 	printf("we do garbage in the method of gc_reference_count!\n");
@@ -112,35 +92,37 @@ void start_garbage_collection()
 
 }
 
-/*
+
 //采用RTM方法进行垃圾回收
-long gc_reference_time_map(int deleteversion)
+int64_t gc_reference_time_map(int deleteversion)
 {
 	int *cbt;
-	cbt=get_container_bit_table();//得到删除版本的container_bit_map
+	cbt=get_container_bit_table(deleteversion);//得到删除版本的container_bit_map
 
-	RTMlist*  rtm;
-	rtm=get_real_reference_time_map();//得到实际的RTM
+	struct RTMdata*  RTMhead;
 	
-	gc_list_type* gc_head=NULL;
+	RTMhead=get_real_reference_time_map();//得到实际的RTM
+	
+	struct gc_list_type* gchead=NULL;
 
 	//gc_list_type *head1;
 
-	RTMlist* rtm_head;
+	//struct RTMdata* rtm_head;
 
-	while(rtm_head!=NULL)
+	while(RTMhead!=NULL)
 	{
 		int i=0;
-		while(rtm_head->RTMdata.rtm[i]!=-1)//
+		while(i<RTMdata->len)
 		{
-			if (rtm_head->RTMdata.rtm[i++]==deleteversion)
+			if (RTMhead->rtm[i++]==deleteversion)
 			{
 
-				head1=gc_list_AddEnd(head1,rtm_head->RTMdata);
+
+				head1=gc_list_AddEnd(gchead,RTMhead);
 				gc_count++;
 			}
 		}
-		rtm_head = rtm_head->next;
+		RTMhead = RTMhead->next;
 	}
 	//根据RTM_check_list,检测RTM，得到实际回收的大小
 
@@ -148,12 +130,12 @@ long gc_reference_time_map(int deleteversion)
 
 }
 
-*/
 
 
-/*
+
+
 //批量回收
-long patch_gc_reference_time_map(int deleteversion)
+int64_t patch_gc_reference_time_map(int deleteversion)
 {
 	int *cbt;
 	cbt=get_container_bit_table();//得到删除版本的container_bit_map
