@@ -9,6 +9,7 @@
 #define CONTAINERSTORE_H_
 
 #include "../destor.h"
+#include "../gc/gc_rtm.h"
 
 #define CONTAINER_SIZE (4194304ll) //4MB
 #define CONTAINER_META_SIZE (32768ll) //32KB

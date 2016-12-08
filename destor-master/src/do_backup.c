@@ -70,7 +70,7 @@ void do_backup(char *path) {
 	close_id_shift_and_hashtable();
 
 	update_backup_version(jcr.bv);
-
+	
 	free_backup_version(jcr.bv);
 
 	puts("==== backup end ====");

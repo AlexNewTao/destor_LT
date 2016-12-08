@@ -148,7 +148,7 @@ void init_kvstore_htable()
                     is->id_shift_data.container_id=f_id;
                     is->id_shift_data.chunk_shift=globle_shift;
 
-                    struct _id_shift_type *head=_id_shift_AddEnd(head,is->id_shift_data);
+                    struct _id_shift_type *head=_id_shift_AddEnd(ishead,is->id_shift_data);
 
                     //把初始的chunk偏移量往后移动
                     globle_shift=globle_shift+container_chunk_number;

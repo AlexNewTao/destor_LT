@@ -198,8 +198,8 @@ static void index_lookup_base(struct segment *s){
                 int32_t index_shift =me->off;
 
                 //再通过id号在id_shift结构体中得到偏移量
-                struct _id_shift_type *head=NULL;
-                int start_shift=get_shift_by_id(head,c->id);
+                //struct _id_shift_type *head=NULL;
+                int start_shift=get_shift_by_id(ishead,c->id);
 
                 set_index_bit(index_shift+start_shift);
 
@@ -230,8 +230,8 @@ static void index_lookup_base(struct segment *s){
                     int index_shift=me->off;
 
                     //再通过id号在id_shift结构体中得到偏移量
-                    struct _id_shift_type *head;
-                    int start_shift=get_shift_by_id(head,c->id);
+                    //struct _id_shift_type *head;
+                    int start_shift=get_shift_by_id(ishead,c->id);
                     set_index_bit(index_shift+start_shift);
 
                     SET_CHUNK(c, CHUNK_DUPLICATE);

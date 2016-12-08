@@ -150,37 +150,35 @@ void updata_container_bit_table_attribute(int shift,int attribute);
 
 
 
-//int* get_newest_container_bit_map(int backupversion);
+int* get_newest_container_bit_map(int backupversion);
 
 
 
-/*
+
 //============================reference_time_map=======================
 //初始化reference_time_map
 //以一个链表中嵌套另一个链表的方式去初始化reference_time_map
 //
 
-
-typedef struct RTMdata
+struct RTMdata
 {
-	containerid id;
+	int64_t id;
+	int16_t len;
 	int16_t *rtm;
-	
+	struct RTMdata* next;
 };
 
-typedef struct RTMlist
-{
-	RTMdata rtmdata;
-	struct RTMlist *next;
-};
 
+void read_RTM_from_disk() ;
+
+void write_RTM_to_disk() ;
 
 RTMlist* Init_RTMlist();
 
 
-RTMlist *RTMlist_AddEnd (RTMlist *head,RTMdata rtmdata);
+void RTMlist_AddEnd (RTMdata rtmdata);
 
-void update_reference_time_map(RTMlist *head,int64_t id);
+void update_reference_time_map(int64_t id);
 
 int* get_newest_container_bit_table(int last);
 
@@ -197,12 +195,12 @@ int* get_newest_container_bit_table(int last);
 int get_CBT(int n);
 
 
-void update_RTM_to_same_backupversion(int n,int backupversion,RTMlist *head);
+void update_RTM_to_same_backupversion(int n,int backupversion,RTMdata *RTMhead);
 
 
-void check_last_container_bit_table(int* a,int n, RTMlist *head);
+void check_last_container_bit_table(int* a,int n, RTMdata *RTMhead);
 
-RTMlist* get_real_reference_time_map(RTMlist *head);
-*/
+RTMdata* get_real_reference_time_map(RTMldata *RTMhead);
+
 
 #endif

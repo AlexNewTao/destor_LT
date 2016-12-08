@@ -9,7 +9,7 @@
 #define MASK 0x1F
 GHashTable* id_shift_hash;
 
-struct _id_shift_type *head;
+struct _id_shift_type *ishead;
 static FILE* fp;
 
 
@@ -81,12 +81,12 @@ void destory_id_shift_hash()
 
 void Destory_id_shift()
 {
-    struct _id_shift_type *p = head;
-    while(head!=NULL)
+    struct _id_shift_type *p = ishead;
+    while(ishead!=NULL)
     {
-         head = head->next;
-         free(p);
          p = head;
+         free(p);
+         ishead = ishead->next;
     }
 }
 //20161128,在备份结束后，我们要释放id_shift和id_shift_hash；
@@ -100,7 +100,7 @@ void close_id_shift_and_hashtable()
 
 /*=======================================*/
 //在id_shift的链表中追加结点；
-struct _id_shift_type *_id_shift_AddEnd (struct _id_shift_type *head,struct _id_shift id_shift_data)
+struct _id_shift_type *_id_shift_AddEnd (struct _id_shift_type *ishead,struct _id_shift id_shift_data)
 {
     struct _id_shift_type *node,*htemp;
     if (!(node=(struct _id_shift_type *)malloc(sizeof(struct _id_shift_type))))//分配空间
@@ -113,27 +113,27 @@ struct _id_shift_type *_id_shift_AddEnd (struct _id_shift_type *head,struct _id_
         node->id_shift_data.container_id=id_shift_data.container_id;
         node->id_shift_data.chunk_shift=id_shift_data.chunk_shift;//保存数据
         node->next=NULL;//设置结点指针为空，即为表尾；
-        if (head==NULL)
+        if (ishead==NULL)
         {
             head=node;
             return head;
         }
-        htemp=head;
+        htemp=ishead;
         while(htemp->next!=NULL)
         {
             htemp=htemp->next;
         }
         htemp->next=node;
-        return head;
+        return ishead;
     }
 }
 
 //通过id号找到对应的偏移量；
 
-int get_shift_by_id(struct _id_shift_type *head,int64_t id)
+int get_shift_by_id(struct _id_shift_type *ishead,int64_t id)
 {
 	struct _id_shift_type *htemp;
-    htemp=head;
+    htemp=ishead;
     while(htemp)
     {
         if (htemp->id_shift_data.container_id==id)
@@ -145,10 +145,10 @@ int get_shift_by_id(struct _id_shift_type *head,int64_t id)
     return 0;
 }
 
-int get_next_shift_by_id(struct _id_shift_type *head,int64_t id)
+int get_next_shift_by_id(struct _id_shift_type *ishead,int64_t id)
 {
 	struct _id_shift_type *htemp;
-    htemp=head;
+    htemp=ishead;
     while(htemp)
     {
         if (htemp->id_shift_data.container_id==id)
@@ -450,7 +450,7 @@ void write_container_bit_table_to_disk()
     cbt_fname = sdscat(cbt_fname, "container_bit_table");
 
     FILE *fp;
-    if((fp = fopen(cbt_fname, "r"))) 
+    if((fp = fopen(cbt_fname, "w"))) 
     {
         /* Read if exists. */
         fwrite(&CBT, container_size, 1, fp);
@@ -459,8 +459,6 @@ void write_container_bit_table_to_disk()
     sdsfree(cbt_fname);
     NOTICE("write container bit table successfully");
 }
-
-
 
 
 
@@ -511,28 +509,97 @@ int* get_newest_container_bit_map(int backupversion)
 }
 //===============================reference_time_map=====================
 
-/*typedef struct RTMdata
+struct RTMdata
 {
 	int64_t id;
+	int16_t len;
 	int16_t *rtm;
-	
+	struct RTMdata* next;
 };
 
-typedef struct RTMlist
+struct RTMdata *RTMhead;
+
+/*struct RTMlist
 {
 	RTMdata rtmdata;
 	struct RTMlist *next;
-};
+};*/
 
-*/
+void write_RTM_to_disk() 
+{
+    sds CBTpath = sdsdup(destor.working_directory);
+    CBTpath = sdscat(CBTpath, "/reference_time_map/");
+
+    sds cbt_fname = sdsdup(CBTpath);
+    cbt_fname = sdscat(cbt_fname, "reference_time_map");
+
+    FILE *fp;
+
+    if((fp = fopen(cbt_fname, "w"))) 
+    {
+    	while(head!=NULL)
+    	{
+    		fwrite(&head->id, sizeof(int64_t), 1, fp);
+    		fwrite(&head->len, sizeof(int), 1, fp);
+    		fwrite(&head->rtm, sizeof(int16_t), len, fp);
+    		struct RTMdata* tmp = head;
+    		free(tmp->rtm);
+    		free(tmp);
+    		head = head->next;
+    	}
+        fclose(fp);
+    }
+    sdsfree(cbt_fname);
+    NOTICE("write write_RTM_to_disk successfully");
+}
+
+
+void read_RTM_from_disk() 
+{
+    sds CBTpath = sdsdup(destor.working_directory);
+    CBTpath = sdscat(CBTpath, "/reference_time_map/");
+
+    sds cbt_fname = sdsdup(CBTpath);
+    cbt_fname = sdscat(cbt_fname, "reference_time_map");
+
+    FILE *fp;
+    struct RTMdata *head = NULL;
+
+    if((fp = fopen(cbt_fname, "r"))) 
+    {
+    	struct RTMdata* tmp = NULL;
+    	while(!feof(fp))
+    	{
+
+    		if(head == NULL){
+    			tmp = (struct RTMdata*)malloc(sizeof(struct RTMdata));
+    			head = tmp;
+    		}else{
+    			tmp->next = (struct RTMdata*)malloc(sizeof(struct RTMdata));
+    			tmp = tmp->next;
+    		}
+
+    		fread(&tmp->id, sizeof(tmp->id), 1, fp);
+    		fread(&tmp->len, sizeof(tmp->len), 1, fp);
+    		tmp->rtm = (int16_t*)malloc(sizeof(int16_t) * tmp->len);
+    		fread(&tmp->rtm, sizof(int16_t), tmp->len, fp);
+    		tmp->next = NULL;
+    	}
+    	
+        fclose(fp);
+    }
+    sdsfree(cbt_fname);
+    NOTICE("read_RTM_from_disk successfully");
+    return head;
+}
 
 
 //单链表的初始化
  
-/*RTMlist* Init_RTMlist()
+RTMdata* Init_RTMlist()
 {
-    RTMlist *L;
-    L = (RTMlist *)malloc(sizeof(RTMlist));   //申请结点空间 
+    RTMdata *L;
+    L = (RTMdata *)malloc(sizeof(RTMdata));   //申请结点空间 
     if(L == NULL)                       //判断是否有足够的内存空间 
         printf("申请内存空间失败\n");
     L->next=NULL;
@@ -540,10 +607,10 @@ typedef struct RTMlist
  	return L;
 }
 
-*/
-/*RTMlist *RTMlist_AddEnd (RTMlist *head,RTMdata rtmdata)
+
+void RTMlist_AddEnd (RTMdata rtmdata)
 {
-    RTMlist *node,*htemp;
+    RTMdata *node,*htemp;
     if (!(node=(RTMlist *)malloc(sizeof(RTMlist))))//分配空间
     {
         printf("内存分配失败！\n");
@@ -551,33 +618,34 @@ typedef struct RTMlist
     }
     else
     {
-        node->rtmdata.id=rtmdata.id;//保存数据
-        node->rtmdata.rtm=rtmdata.rtm;//保存数据
+        node->id=rtmdata.id;//保存数据
+        node->rtm=rtmdata.rtm;//保存数据
+        node->len=rtmdata.len;//保存数据
+
         node->next=NULL;//设置结点指针为空，即为表尾；
-        if (head==NULL)
+        if (RTMhead==NULL)
         {
-            head=node;
-            return head;
+            RTMhead=node;
+          
         }
-        htemp=head;
+        htemp=RTMhead;
         while(htemp->next!=NULL)
         {
             htemp=htemp->next;
         }
         htemp->next=node;
-        return htemp;
     }
-}*/
+}
 
-/*void update_reference_time_map(RTMlist *head,int64_t id)
+void update_reference_time_map(int64_t id)
 {
-	int start=get_shift_by_id(head,id);
-	int end=get_next_shift_by_id(head,id)-1;
+	int start=get_shift_by_id(ishead,id);
+	int end=get_next_shift_by_id(ishead,id)-1;
 
-	RTMlist *tmphead=head->next;
+	RTMdata *tmphead=RTMhead->next;
 	while(tmphead!=NULL)
 	{
-		if (tmphead->rtmdata.id==id)
+		if (tmphead->id==id)
 		{
 			for (int i = 0; i < end-start; i++)
 			{
@@ -590,7 +658,7 @@ typedef struct RTMlist
 		}
 		tmphead=tmphead->next;
 	}
-}*/
+}
 
 
 /*void change_RTM_backupversition(RTMlist *head,int backupversion,int n,containerid id)
@@ -622,7 +690,7 @@ typedef struct RTMlist
 //一定要注意，container bit table的顺序和RTM的顺序是一致的。
 
 
-/*int* get_newest_container_bit_table(int last)
+int* get_newest_container_bit_table(int last)
 {
 	CBTpath = sdsdup(destor.working_directory);
     CBTpath = sdscat(CBTpath, "/containerbittable/");
@@ -648,10 +716,10 @@ typedef struct RTMlist
     //NOTICE("write container bit table successfully");
     return CBT;
 
-}*/
+}
 
 
-/*int get_CBT(int n)
+int get_CBT(int n)
 {
 	int index_loc;
 	int bit_loc;
@@ -659,34 +727,34 @@ typedef struct RTMlist
 	bit_loc=n&MASK;//等价于n%32。
 	return CBT[index_loc]<<bit_loc;
 }
-*/
+
 
 
 //n means the number of n-th container 
-/*void update_RTM_to_same_backupversion(int n,int backupversion,RTMlist *head)
+void update_RTM_to_same_backupversion(int n,int backupversion,RTMdata *RTMhead)
 {
 	
 	RTMlist *htemp;
-	htemp=head;
+	htemp=RTMhead;
 	int i=0;
 	while(i<n)
 	{
 		htemp=htmp->next;
 	}
 	int j=0;
-	while(htemp->rtmdata.rtm[j]!=backupversion)
+	while((htemp->rtm[j]!=backupversion)&&(j<htemp->len))
 	{
 		htemp->rtmdata.rtm[j]=backupversion;
 		j++;
 	}
-}*/
+}
 
 
 
 
 //数组用来存放上次检测为00的位置；
 
-/*void check_last_container_bit_table(int* a,int n, RTMlist *head)
+void check_last_container_bit_table(int* a,int n, RTMdata *RTMhead)
 {
     int check_number=n;
     int* check_arr=get_newest_container_bit_table(last+1);
@@ -724,10 +792,10 @@ typedef struct RTMlist
     {
         check_last_container_bit_table(zero_arr,uncheck_container,head)
     }
-}*/
+}
 
 
-/*RTMlist* get_real_reference_time_map(RTMlist *head)
+RTMdata* get_real_reference_time_map(RTMdata *RTMhead)
 {
 	int last=1;
 	//首先得到最新版本的container_bit_table
@@ -760,15 +828,15 @@ typedef struct RTMlist
 		//属性为11
 		if ((get_CBT(i,arr)==1)&&(get_CBT(i+1,arr)==1))
 		{
-			update_RTM_to_same_backupversion(container_count,current_bv,head);
+			update_RTM_to_same_backupversion(container_count,current_bv,RTMhead);
 		}
 	}
 
-	check_last_container_bit_table(zero_arr,uncheck_container, head);
+	check_last_container_bit_table(zero_arr,uncheck_container, RTMhead);
 
-	return head;
+	return RTMhead;
 
-}*/
+}
 
 
 

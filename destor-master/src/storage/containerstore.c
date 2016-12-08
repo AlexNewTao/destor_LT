@@ -27,6 +27,22 @@ static void* append_thread(void *arg) {
 		if (c == NULL)
 			break;
 
+
+		//在这里我来加上RTM的数据，并且，添加到RTM中。
+        int len=c->containerMeta.chunk_num;
+        int16_t *array=(int16_t*)malloc(len*sizeof(int16_t));
+        for (int i = 0; i < len; i++)
+        {
+            array[i]=current_bv;
+        }
+        struct RTMdata *temp;
+        temp=(struct RTMdata *)malloc(sizeof(struct RTMdata));
+        temp->id=c->containerMeta.id;
+        temp->len=len;
+        temp->rtm=array;
+        RTMlist_AddEnd(temp);
+
+
 		TIMER_DECLARE(1);
 		TIMER_BEGIN(1);
 
