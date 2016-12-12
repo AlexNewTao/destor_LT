@@ -151,6 +151,8 @@ extern struct{
 
 static void index_lookup_base(struct segment *s){
 
+    struct lruCache *cache;
+
     GSequenceIter *iter = g_sequence_get_begin_iter(s->chunks);
     GSequenceIter *end = g_sequence_get_end_iter(s->chunks);
     for (; iter != end; iter = g_sequence_iter_next(iter)) {
@@ -190,8 +192,16 @@ static void index_lookup_base(struct segment *s){
                 //得到container id号了，然后根据container id找到指纹对应的偏移量；
                 //首先获得container meta
                
-                struct containerMeta* cm = (struct containerMeta*) malloc(sizeof(struct containerMeta));
-                cm=retrieve_container_meta_by_id_gc(c->id);
+                //struct containerMeta* cm = (struct containerMeta*) malloc(sizeof(struct containerMeta));
+                //cm=retrieve_container_meta_by_id_gc(c->id);
+                struct containerMeta *cm = lru_cache_lookup(cache, &c->fp);
+                if (!cm) {
+                    VERBOSE("gc cache: container %lld is missed", c->id);
+                    cm = retrieve_container_meta_by_id(c->id);
+                    assert(lookup_fingerprint_in_container_meta(cm, &c->fp));
+                    lru_cache_insert(cache, cm, NULL, NULL);
+                }
+
                 //根据containerMeta得到metaEntry
                 struct metaEntry* me=get_metaentry_in_container_meta(&cm, &c->fp);
                 //得到偏移量
@@ -222,8 +232,15 @@ static void index_lookup_base(struct segment *s){
                      */
                     c->id = id;
                    
-                    struct containerMeta* cm = (struct containerMeta*) malloc(sizeof(struct containerMeta));
-                    cm=retrieve_container_meta_by_id_gc(c->id);
+                    //struct containerMeta* cm = (struct containerMeta*) malloc(sizeof(struct containerMeta));
+                    //cm=retrieve_container_meta_by_id_gc(c->id);
+                    struct containerMeta *cm = lru_cache_lookup(cache, &c->fp);
+                    if (!cm) {
+                        VERBOSE("gc cache: container %lld is missed", c->id);
+                        cm = retrieve_container_meta_by_id(c->id);
+                        assert(lookup_fingerprint_in_container_meta(cm, &c->fp));
+                        lru_cache_insert(cache, cm, NULL, NULL);
+                    }
                     //根据containerMeta得到metaEntry
                     struct metaEntry* me=get_metaentry_in_container_meta(cm, c->fp);
                     //得到偏移量

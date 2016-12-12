@@ -3,7 +3,7 @@
 #include "../utils/sync_queue.h"
 #include "../jcr.h"
 #include "../gc/gc_rtm.h"
-#include "../utils/lru_cache.h"
+//#include "../utils/lru_cache.h"
 
 static int64_t container_count = 0;
 
@@ -304,7 +304,7 @@ struct container* retrieve_container_by_id(containerid id) {
 	return c;
 }
 
-struct containerMeta* retrieve_container_meta_by_id_gc(containerid id) {
+/*struct containerMeta* retrieve_container_meta_by_id_gc(containerid id) {
 
 
 	struct lruCache *cache;
@@ -317,7 +317,7 @@ struct containerMeta* retrieve_container_meta_by_id_gc(containerid id) {
 		lru_cache_insert(cache, cm, NULL, NULL);
 	}
 	return cm;
-}
+}*/
 
 
 
