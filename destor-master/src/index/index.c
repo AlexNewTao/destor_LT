@@ -191,7 +191,7 @@ static void index_lookup_base(struct segment *s){
                 //首先获得container meta
                
                 struct containerMeta* cm = (struct containerMeta*) malloc(sizeof(struct containerMeta));
-                cm=retrieve_container_meta_by_id(c->id);
+                cm=retrieve_container_meta_by_id_gc(c->id);
                 //根据containerMeta得到metaEntry
                 struct metaEntry* me=get_metaentry_in_container_meta(&cm, &c->fp);
                 //得到偏移量
@@ -223,7 +223,7 @@ static void index_lookup_base(struct segment *s){
                     c->id = id;
                    
                     struct containerMeta* cm = (struct containerMeta*) malloc(sizeof(struct containerMeta));
-                    cm=retrieve_container_meta_by_id(c->id);
+                    cm=retrieve_container_meta_by_id_gc(c->id);
                     //根据containerMeta得到metaEntry
                     struct metaEntry* me=get_metaentry_in_container_meta(cm, c->fp);
                     //得到偏移量

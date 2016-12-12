@@ -204,6 +204,7 @@ int* get_newest_container_bit_table(int last);
 
 int get_CBT(int n);
 
+int get_CBT_array(int n,int *array);
 
 void update_RTM_to_same_backupversion(int n,int backupversion,struct RTMdata *RTMhead);
 

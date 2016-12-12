@@ -3,6 +3,7 @@
 #include "../utils/sync_queue.h"
 #include "../jcr.h"
 #include "../gc/gc_rtm.h"
+#include "../utils/lru_cache.h"
 
 static int64_t container_count = 0;
 
@@ -302,6 +303,23 @@ struct container* retrieve_container_by_id(containerid id) {
 
 	return c;
 }
+
+struct containerMeta* retrieve_container_meta_by_id_gc(containerid id) {
+
+
+	struct lruCache *cache;
+
+	struct containerMeta *cm = lru_cache_lookup(cache, &c->fp);
+	if (!cm) {
+		VERBOSE("gc cache: container %lld is missed", c->id);
+		cm = retrieve_container_meta_by_id(c->id);
+		assert(lookup_fingerprint_in_container_meta(cm, &c->fp));
+		lru_cache_insert(cache, cm, NULL, NULL);
+	}
+	return cm;
+}
+
+
 
 static struct containerMeta* container_meta_duplicate(struct container *c) {
 	struct containerMeta* base = &c->meta;
