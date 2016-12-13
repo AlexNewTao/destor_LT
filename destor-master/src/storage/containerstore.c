@@ -378,7 +378,7 @@ struct containerMeta* retrieve_container_meta_by_id(containerid id) {
 	unser_int32(cm->data_size);
 
 	if(cm->id != id){
-		WARNING("expect %lld, but read %lld", id, cm->id);
+		WARNING("expect %lld, but read %lld, containerid=%lld", id, cm->id, container_count);
 		assert(cm->id == id);
 	}
 

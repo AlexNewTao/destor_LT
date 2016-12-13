@@ -6,6 +6,7 @@
 #include "../recipe/recipestore.h"
 #include "../jcr.h"
 #include "../gc/gc_rtm.h"
+#include "../utils/lru_cache.h"
 
 
 
@@ -150,7 +151,7 @@ extern struct{
 } storage_buffer;
 
 static void index_lookup_base(struct segment *s){
-
+	printf("index_lookup_base begin\n");
     struct lruCache *cache;
 
     GSequenceIter *iter = g_sequence_get_begin_iter(s->chunks);
@@ -185,7 +186,9 @@ static void index_lookup_base(struct segment *s){
         /* Check the fingerprint cache */
         if (!CHECK_CHUNK(c, CHUNK_DUPLICATE)) {
             /* Searching in fingerprint cache */
+			
             int64_t id = fingerprint_cache_lookup(&c->fp);
+		
             if(id != TEMPORARY_ID){
                 c->id = id;
                 ////2016.11.21.修改index_bit
@@ -194,9 +197,12 @@ static void index_lookup_base(struct segment *s){
                
                 //struct containerMeta* cm = (struct containerMeta*) malloc(sizeof(struct containerMeta));
                 //cm=retrieve_container_meta_by_id_gc(c->id);
+
                 struct containerMeta *cm = lru_cache_lookup(cache, &c->fp);
-                if (!cm) {
+                printf("get containermeta in index!, cm id == %d\n", cm->id);
+                if (0){//!cm) {
                     VERBOSE("gc cache: container %lld is missed", c->id);
+					printf("sssssss\n");
                     cm = retrieve_container_meta_by_id(c->id);
                     assert(lookup_fingerprint_in_container_meta(cm, &c->fp));
                     lru_cache_insert(cache, cm, NULL, NULL);
@@ -231,12 +237,14 @@ static void index_lookup_base(struct segment *s){
                      * since a partial key is possible in near-exact deduplication.
                      */
                     c->id = id;
-                   
+                    printf("1:c->id == %d, id == %d\n");
                     //struct containerMeta* cm = (struct containerMeta*) malloc(sizeof(struct containerMeta));
                     //cm=retrieve_container_meta_by_id_gc(c->id);
                     struct containerMeta *cm = lru_cache_lookup(cache, &c->fp);
+					printf("2:c->id == %d, id == %d\n");
                     if (!cm) {
                         VERBOSE("gc cache: container %lld is missed", c->id);
+						printf("3:c->id == %d, id == %d\n");
                         cm = retrieve_container_meta_by_id(c->id);
                         assert(lookup_fingerprint_in_container_meta(cm, &c->fp));
                         lru_cache_insert(cache, cm, NULL, NULL);
