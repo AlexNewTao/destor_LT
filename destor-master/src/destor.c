@@ -22,7 +22,7 @@ extern void load_config_from_string(sds config);
 /* : means argument is required.
  * :: means argument is required and no space.
  */
-const char * const short_options = "sr::t::p::h";
+const char * const short_options = "sr::t::p::h::g";
 
 struct option long_options[] = {
 		{ "state", 0, NULL, 's' },
@@ -289,6 +289,11 @@ int main(int argc, char **argv) {
 			load_config_from_string(param);
 			break;
 		}
+		case 'g':{
+			job = DESTOR_GARBAGE_COLLECTION;
+			printf("parementer g!\n");
+			break;
+		}
 		default:
 			return 0;
 		}
@@ -349,6 +354,12 @@ int main(int argc, char **argv) {
 		sdsfree(path);
 		break;
 	}
+
+	case DESTOR_GARBAGE_COLLECTION:{
+		start_garbage_collection();
+		break;
+	}
+	
 	default:
 		fprintf(stderr, "Invalid job type!\n");
 		usage();

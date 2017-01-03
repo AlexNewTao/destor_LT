@@ -43,6 +43,7 @@
 #define DESTOR_RESTORE 2
 #define DESTOR_MAKE_TRACE 3
 #define DESTOR_DELETE 4
+#define DESTOR_GARBAGE_COLLECTION 5
 
 /* Log levels */
 #define DESTOR_DEBUG 0
