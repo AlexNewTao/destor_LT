@@ -11,6 +11,13 @@ time: 2016.11
 最后实际回收的数量等等。
 
 
+
+
+
+
+
+
+
 */
 
 // 开始垃圾回收函数
@@ -57,6 +64,9 @@ void gc_reference_count()
 }
 void gc_mark_and_sweep()
 {
+
+	printf("hello \n");
+	printf("harh\n");
 	printf("we do garbage in the method of gc_mark_and_sweep!\n");
 }
 //  3 选择不同的垃圾回收机制，给其他的垃圾回收方法留有接口
