@@ -22,7 +22,7 @@ time: 2016.11
 
 static int64_t gc_count=0;
 
-struct gc_list_type *gc_list_AddEnd (struct gc_list_type *gchead,struct gc_list_data *gc_data)
+void gc_list_AddEnd (struct gc_list_data *gc_data)
 {
     struct gc_list_type *node,*htemp;
     if (!(node=(struct gc_list_type *)malloc(sizeof(struct gc_list_type))))//分配空间
@@ -38,7 +38,7 @@ struct gc_list_type *gc_list_AddEnd (struct gc_list_type *gchead,struct gc_list_
         if (gchead==NULL)
         {
             gchead=node;
-            return gchead;
+            //return gchead;
         }
         htemp=gchead;
         while(htemp->next!=NULL)
@@ -46,7 +46,7 @@ struct gc_list_type *gc_list_AddEnd (struct gc_list_type *gchead,struct gc_list_
             htemp=htemp->next;
         }
         htemp->next=node;
-        return gchead;
+        //return gchead;
     }
 }
 
@@ -108,7 +108,7 @@ void gc_reference_time_map()
 	{
 		gc_count=gc_reference_time_map_alone(deleteversion);
 	}
-	if (deletway==2)
+	else if (deletway==2)
 	{
 		gc_count=gc_reference_time_map_patch(deleteversion);
 	}
@@ -116,12 +116,14 @@ void gc_reference_time_map()
 	{
 		printf("worry deletway choose!\n");
 	}
+	get_delete_message();
 }
 
 void get_delete_message()
 {
 	int64_t size;
 	size=gc_count*4/1024;
+	printf("garbage collection finished\n");
 	printf("the collection  size is %ld MB\n", size);
 }
 
@@ -130,17 +132,9 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 {
 	//int *cbt;
 	//cbt=get_container_bit_table(deleteversion);//得到删除版本的container_bit_map
-
-	struct RTMdata*  RTMhead;
-	
-	RTMhead=get_real_reference_time_map(RTMhead);//得到实际的RTM
-	
-	struct gc_list_type* gchead=NULL;
-
-	//gc_list_type *head1;
-
-	//struct RTMdata* rtm_head;
-
+	printf("1111\n");
+	get_real_reference_time_map();//得到实际的RTM
+	printf("2222\n");
 	while(RTMhead!=NULL)
 	{
 		int i=0;
@@ -151,15 +145,14 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 				struct gc_list_data *gc_data;
 				gc_data=(struct gc_list_data *)malloc(sizeof(struct gc_list_data));
 				gc_data->gc_containerid=RTMhead->id;
-				gc_data->gc_chunk_shift=i;
-				gchead=gc_list_AddEnd(gchead,gc_data);
+				gc_data->gc_chunk_shift=i+1;
+				gc_list_AddEnd(gc_data);
 				gc_count++;
 			}
 		}
 		RTMhead = RTMhead->next;
 	}
 	//根据RTM_check_list,检测RTM，得到实际回收的大小
-
 	return gc_count;
 
 }
@@ -173,13 +166,9 @@ int64_t gc_reference_time_map_patch(int deleteversion)
 {
 	//int *cbt;
 	//cbt=get_container_bit_table(deleteversion);//得到删除版本的container_bit_map
-
-	struct RTMdata*  RTMhead;
 	
-	RTMhead=get_real_reference_time_map(RTMhead);//得到实际的RTM
+	get_real_reference_time_map();//得到实际的RTM
 	
-	struct gc_list_type* gchead=NULL;
-
 	//gc_list_type *head1;
 
 	//struct RTMdata* rtm_head;
@@ -194,7 +183,7 @@ int64_t gc_reference_time_map_patch(int deleteversion)
 				struct gc_list_data *gc_data;
 				gc_data->gc_containerid=RTMhead->id;
 				gc_data->gc_chunk_shift=i;
-				gchead=gc_list_AddEnd(gchead,gc_data);
+				gc_list_AddEnd(gc_data);
 				gc_count++;
 			}
 		}

@@ -116,7 +116,7 @@ int check_index_bit_equal_one(int start,int end);
 
 
 //============================container_bit_table=======================
-#define container_size 1<<16
+#define container_size 1<<10
 int CBT[container_size];
 
 int current_bv;
@@ -163,7 +163,7 @@ void write_container_bit_table_to_disk();
 
 void updata_container_bit_table_attribute(int shift,int attribute);
 
-
+void show_cbt();
 
 int* get_newest_container_bit_map(int backupversion);
 
@@ -214,12 +214,12 @@ int get_CBT(int n);
 
 int get_CBT_array(int n,int *array);
 
-void update_RTM_to_same_backupversion(int n,int backupversion,struct RTMdata *RTMhead);
+void update_RTM_to_same_backupversion(int n,int backupversion);
 
 
-void check_last_container_bit_table(int*a,int n, struct RTMdata *RTMhead);
+void check_last_container_bit_table(int*a,int n);
 
-struct RTMdata* get_real_reference_time_map(struct RTMdata *RTMhead);
+void get_real_reference_time_map();
 
 
 #endif

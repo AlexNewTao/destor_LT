@@ -291,8 +291,8 @@ int check_index_bit_equal_one(int start,int end)
 //=============================container_bit_table==========================
 
 
-#define container_size 1<<16
-int32_t CBT[container_size];
+/*#define container_size 1<<16
+int32_t CBT[container_size];*/
 void init_container_bit_table(int backupversion)
 {
 	
@@ -446,7 +446,7 @@ void update_container_bit_table_and_RTM(int backupversion)
         }  
     }
     printf("update container_bit_table successful!\n");
-/*
+
     printf("update container_bit_table is as follow!\n");
     int k;
     for (k = 1; k <=1000; k++)
@@ -457,7 +457,7 @@ void update_container_bit_table_and_RTM(int backupversion)
 			printf("\n");
 		}
 	}
-*/
+
 /*	printf("update reference time map as follow!\n");
 	//struct RTMdate *Rtemp;
 	struct RTMdata *Rtemp=RTMhead;
@@ -538,21 +538,18 @@ void update_container_bit_table_attribute(int shift,int attribute)
 int* get_container_bit_map(int backupversion)
 {
 	sds CBTpath = sdsdup(destor.working_directory);
-    CBTpath = sdscat(CBTpath, "/containerbittable");
-
-    sds cbt_fname = sdsdup(CBTpath);
-    cbt_fname = sdscat(cbt_fname, "container_bit_table");
+    CBTpath = sdscat(CBTpath, "/container_bit_table.cbt");
 
     int container_shift=container_size;
 
-    if((fp = fopen(cbt_fname, "r"))) 
+    if((fp = fopen(CBTpath, "r"))) 
     {
         
         while(CBT[0]!=backupversion)
         {
         	if (fseek(fp,container_shift,SEEK_SET))
         	{
-        		fread(&CBT, container_size,1,fp);
+        		fread(&CBT, sizeof(CBT),1,fp);
         	}
 
         	container_shift+=container_size;//偏移量往后移动
@@ -561,7 +558,7 @@ int* get_container_bit_map(int backupversion)
         fclose(fp);
     }
 
-    sdsfree(cbt_fname);
+    sdsfree(CBTpath);
     
     NOTICE("get container bit table of %d backupversion successfully",backupversion);
 
@@ -579,14 +576,26 @@ void write_container_bit_table_to_disk()
     //cbt_fname = sdscat(cbt_fname, "container_bit_table");
 
     FILE *fp;
-    if((fp = fopen(CBTpath, "w"))) 
+    if((fp = fopen(CBTpath, "a+"))) 
     {
         /* Read if exists. */
-        fwrite(&CBT, container_size, 1, fp);
+        fwrite(&CBT, sizeof(CBT), 1, fp);
         fclose(fp);
     }
     sdsfree(CBTpath);
     NOTICE("write container bit table to disk successfully");
+     
+
+ /*   printf("write container_bit_table is as follow!\n");
+    int k;
+    for (k = 1; k <=1000; k++)
+    {
+        printf(" %d",get_cbt_bit(k));
+        if (k%32==0)
+        {
+            printf("\n");
+        }
+    }*/
 }
 
 
@@ -611,31 +620,28 @@ int* merge_or_container_bit_table(int backupversion1,int backupversion2)
 
 
 
-int* get_newest_container_bit_map(int backupversion)
+/*int* get_newest_container_bit_map(int backupversion)
 {
-	sds CBTpath = sdsdup(destor.working_directory);
-    CBTpath = sdscat(CBTpath, "/containerbittable/");
+	
+    sds CBTpath = sdsdup(destor.working_directory);
+    CBTpath = sdscat(CBTpath, "/container_bit_table.cbt");
 
-    sds cbt_fname = sdsdup(CBTpath);
-    cbt_fname = sdscat(cbt_fname, "container_bit_table");
-
-    if ((fp = fopen(cbt_fname, "r"))) {
+    if ((fp = fopen(CBTpath, "r"))) {
         if (fseek(fp,-container_size,SEEK_END))
         {
-        	fread(&CBT, container_size,1, fp);
+        	fread(&cbt, container_size,1, fp);
         }
         
         fclose(fp);
     }
 
-    sdsfree(cbt_fname);
-
+    sdsfree(CBTpath);
     
-    NOTICE("write container bit table successfully");
+    NOTICE("get newest container bit table successfully");
 
-    return CBT;
+    return cbt;
 
-}
+}*/
 //===============================reference_time_map=====================
 
 /*struct RTMdata
@@ -885,34 +891,54 @@ void update_reference_time_map(int64_t id)
 //一定要注意，container bit table的顺序和RTM的顺序是一致的。
 
 
-int* get_newest_container_bit_table(int last)
+int* get_newest_container_bit_table(int times)
 {
-	sds CBTpath = sdsdup(destor.working_directory);
-    CBTpath = sdscat(CBTpath, "/containerbittable/");
 
-    sds cbt_fname = sdsdup(CBTpath);
-    cbt_fname = sdscat(cbt_fname, "container_bit_table");
-
-
-    if ((fp = fopen(cbt_fname, "r"))) {
+    sds CBTpath = sdsdup(destor.working_directory);
+    CBTpath = sdscat(CBTpath, "/container_bit_table.cbt");
+    
+    int* cbt=(int32_t *)malloc(sizeof(CBT));
+    //int cbt[sizeof(CBT)]={0};
+    //times*sizeof(CBT)
+    if ((fp = fopen(CBTpath, "r"))) {
         
-        if (fseek(fp,-last*(container_size),SEEK_END))
+      /*  if ()
         {
-        	fread(&CBT, container_size,1, fp);
-        }
-
+            fread(cbt, sizeof(CBT),1, fp);
+        }*/
         
+        fseek(fp,-times*sizeof(CBT),SEEK_END);
+        fread(cbt, sizeof(CBT),1, fp);
+        
+
         fclose(fp);
     }
 
-    sdsfree(cbt_fname);
+    sdsfree(CBTpath);
 
+    NOTICE("get newest container bit table successfully");
     
-    //NOTICE("write container bit table successfully");
-    return CBT;
-
+    return cbt;
 }
 
+void show_cbt()
+{
+    int i=1;
+    int *arr=get_newest_container_bit_table(i);
+
+    printf("show_ccbtshow_cbtshow_cbtshow_cbt\n");
+
+    int k;
+    for (k = 1; k <=1000; k++)
+    {
+        printf(" %d",get_CBT_array(k,arr));
+        if (k%32==0)
+        {
+            printf("\n");
+        }
+    }
+
+}
 
 int get_CBT(int n)
 {
@@ -923,18 +949,43 @@ int get_CBT(int n)
 	return CBT[index_loc]<<bit_loc;
 }
 
-int get_CBT_array(int n,int *array)
+/*int get_CBT_array(int n,int *array)
 {
 	int index_loc;
 	int bit_loc;
 	index_loc=n>>SHIFT;//等价于n/32。
 	bit_loc=n&MASK;//等价于n%32。
 	return array[index_loc]<<bit_loc;
+}*/
+
+int32_t get_CBT_array(int32_t n,int *array)
+{
+    int32_t index_loc;
+    int32_t bit_loc;
+    int check=n%MASK;
+    int flag;
+    if (check==0)
+    {
+        index_loc=(n>>SHIFT)-1;
+        //index_bit[index_loc]|=(1<<31);
+        flag=array[index_loc]&(1<<31);
+    }
+    else
+    {
+        index_loc=n>>SHIFT;
+        bit_loc=n%MASK-1;
+        flag=array[index_loc]&(1<<bit_loc);
+    }
+    if (flag==0)
+    {
+        return 0;
+    }
+    else
+        return 1;
 }
 
-
 //n means the number of n-th container 
-void update_RTM_to_same_backupversion(int n,int backupversion,struct RTMdata *RTMhead)
+void update_RTM_to_same_backupversion(int n,int backupversion)
 {
 	
 	struct RTMdata *htemp;
@@ -950,6 +1001,7 @@ void update_RTM_to_same_backupversion(int n,int backupversion,struct RTMdata *RT
 		htemp->rtm[j]=backupversion;
 		j++;
 	}
+    printf("hello lllllllllll\n");
 }
 
 
@@ -959,7 +1011,7 @@ static int container_count_gc=0;//用来记录访问的container的数目；
 
 //数组用来存放上次检测为00的位置；
 
-void check_last_container_bit_table(int* a,int n, struct RTMdata *RTMhead)
+void check_last_container_bit_table(int* a,int n)
 {
     int check_number=n;
     int* check_arr=get_newest_container_bit_table(last+1);
@@ -973,7 +1025,7 @@ void check_last_container_bit_table(int* a,int n, struct RTMdata *RTMhead)
 
         if ((get_CBT_array(a[j],check_arr)==0)&&(get_CBT_array(a[j]+1,check_arr)==1)||(get_CBT_array(a[j],check_arr)==1)&&(get_CBT_array(a[j]+1,check_arr)==0))
         {
-            check_number--;
+            check_number=check_number-1;
             j++;
             continue;
         }
@@ -981,7 +1033,7 @@ void check_last_container_bit_table(int* a,int n, struct RTMdata *RTMhead)
         if ((get_CBT_array(a[j],check_arr)==1)&&(get_CBT_array(a[j],check_arr)==1))
         {
             j++;
-            update_RTM_to_same_backupversion(container_count_gc,bv,RTMhead);
+            update_RTM_to_same_backupversion(a[j],bv);
         }
 
         //属性为00
@@ -995,28 +1047,42 @@ void check_last_container_bit_table(int* a,int n, struct RTMdata *RTMhead)
 
     while(uncheck_container!=0)
     {
-        check_last_container_bit_table(zero_arr,uncheck_container,RTMhead);
+        check_last_container_bit_table(zero_arr,uncheck_container);
     }
 }
 
 
 
-struct RTMdata* get_real_reference_time_map(struct RTMdata *RTMhead)
+void get_real_reference_time_map()
 {
 	
-	//首先得到最新版本的container_bit_table
-	
+	read_RTM_from_disk();
+
+    //首先得到最新版本的container_bit_table
 	int uncheck_container=0;//用来记录属性为00的container的数目。
-	int* arr;
-	arr=get_newest_container_bit_table(last);
-	
+
+	//int32_t* arr=(int32_t*)malloc(sizeof(int32_t)*container_size);
+	int32_t *arr=get_newest_container_bit_table(last);
+    printf("aaaaaa\n");
+
+    int k;
+    for (k = 1; k <=1000; k++)
+    {
+        printf(" %d",get_CBT_array(k,arr));
+        if (k%32==0)
+        {
+            printf("\n");
+        }
+    }
+    printf("jjjjjjjjjjjjjjjjjj\n");
+
+	int cu_bv=arr[0];
 	int *zero_arr;
 	int i;
-	for ( i= 32; i < contaienr_count_end*2; i+2)
+	for ( i= 33; i <= container_size*32; i+2)
 	{
-		container_count_gc++;
+		//container_count_gc++;
 
-		
 		//属性为01或者10
 		if((get_CBT_array(i,arr)==0)&&(get_CBT_array(i+1,arr)==1)||(get_CBT_array(i,arr)==1)&&(get_CBT_array(i+1,arr)==0))
 		{
@@ -1027,19 +1093,19 @@ struct RTMdata* get_real_reference_time_map(struct RTMdata *RTMhead)
 		if ((get_CBT_array(i,arr)==0)&&(get_CBT_array(i+1,arr)==0))
 		{
 			uncheck_container++;
-			zero_arr[uncheck_container]=container_count_gc;
+			zero_arr[uncheck_container]=i;
 		}
 
 		//属性为11
 		if ((get_CBT_array(i,arr)==1)&&(get_CBT_array(i+1,arr)==1))
 		{
-			update_RTM_to_same_backupversion(container_count_gc,current_bv,RTMhead);
+			update_RTM_to_same_backupversion(i,cu_bv);
 		}
 	}
 
-	check_last_container_bit_table(zero_arr,uncheck_container, RTMhead);
+    printf("bbbbb\n");
 
-	return RTMhead;
+	check_last_container_bit_table(zero_arr,uncheck_container);
 
 }
 
