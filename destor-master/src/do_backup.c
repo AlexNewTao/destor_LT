@@ -75,12 +75,20 @@ void do_backup(char *path) {
 
 	close_id_shift_and_hashtable();
 	write_container_bit_table_to_disk();
+
+	write_container_count_end_to_disk();
+
+	//check_write_cce();
+
+
 	
 	write_RTM_to_disk();
 
 	update_backup_version(jcr.bv);
 
 	free_backup_version(jcr.bv);
+
+	//show_cbt();
 
 	puts("==== backup end ====");
 
