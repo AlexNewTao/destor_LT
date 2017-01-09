@@ -982,25 +982,37 @@ int32_t get_CBT_array(int32_t n,int *array)
 //n means the number of n-th container 
 void update_RTM_to_same_backupversion(int n,int backupversion)
 {
-	printf("a1a1a1\n");
+	//printf("a1a1a1");
 	struct RTMdata *htemp;
 	htemp=RTMhead;
 
-    printf("n is %d\n",n );
+    /*struct RTMdata *testhtemp;
+    testhtemp=RTMhead;
+    int k=0;
+    while(testhtemp!=NULL)
+    {
+        testhtemp=testhtemp->next;
+        k++;
+    }
+    printf("k is %d\n",k );*/
+
+    //printf(" n is %d  ",n );
 	int i=0;
-	while(i<n)
+	//while((i<n)&&(htemp->next!=NULL))
+    while(i<n)
 	{
 		htemp=htemp->next;
         i=i+1;
 	}
-    printf("a2a2a2\n");
+    //printf("the i is %d ", i);
+    //printf(" a2a2a2 ");
 	int j=0;
 	while((htemp->rtm[j]!=backupversion)&&(j<htemp->len))
 	{
 		htemp->rtm[j]=backupversion;
-		j++;
+		j=j+1;
 	}
-    printf("a3a3a3\n");
+    //printf("a3a3a3 \n");
 }
 
 
@@ -1050,32 +1062,7 @@ void check_last_container_bit_table(GSequence *seq)
             g_sequence_append(zero_new_gsequence,pos);
             iter=g_sequence_iter_next(iter);
         }
-
-
-
-   /*     if ((get_CBT_array(a[j],check_arr)==0)&&(get_CBT_array(a[j]+1,check_arr)==1)||(get_CBT_array(a[j],check_arr)==1)&&(get_CBT_array(a[j]+1,check_arr)==0))
-        {
-            check_number=check_number-1;
-            j++;
-            continue;
-        }
-
-        if ((get_CBT_array(a[j],check_arr)==1)&&(get_CBT_array(a[j],check_arr)==1))
-        {
-            j++;
-            update_RTM_to_same_backupversion(a[j],bv);
-        }
-
-        //属性为00
-        if ((get_CBT_array(a[j],check_arr)==0)&&(get_CBT_array(a[j],check_arr)==0))
-        {
-        	j++;
-            uncheck_container++;
-            zero_arr[uncheck_container]=zero_arr[j];
-        }*/
     }
-
-    g_sequence_free(seq);
 
     GSequenceIter* new_iter=g_sequence_get_begin_iter(zero_new_gsequence);
     GSequenceIter* new_end = g_sequence_get_end_iter(zero_new_gsequence);
@@ -1083,6 +1070,23 @@ void check_last_container_bit_table(GSequence *seq)
     while(new_iter!=new_end)
     {
         check_last_container_bit_table(zero_new_gsequence);
+    }
+
+    g_sequence_free(zero_new_gsequence);
+}
+
+static void check_g_sequence(GSequence *seq)
+{
+    GSequenceIter* new_iter=g_sequence_get_begin_iter(seq);
+    GSequenceIter* new_end = g_sequence_get_end_iter(seq);
+
+    while(new_iter!=new_end)
+    {
+        int *pos=g_sequence_get(new_iter);
+        
+        new_iter=g_sequence_iter_next(new_iter);
+
+        printf("the GSequence is %d\n",*pos);
     }
 }
 
@@ -1126,7 +1130,7 @@ void get_real_reference_time_map()
         m=get_CBT_array(i,arr);
         n=get_CBT_array(i+1,arr);
         j=j+1;
-        printf("m =%d, n=%d, i =%d\n",m,n,i);
+        printf("m =%d, n=%d, i =%d,j=%d\n",m,n,i,j);
         
         if ((m==0&&n==1)||(m==1&&n==0))
         {
@@ -1136,25 +1140,33 @@ void get_real_reference_time_map()
         else if (m==0&&n==0)
         {
         
-            printf("bb\n");
-            int s=(int32_t*)malloc(sizeof(int32_t));
-            s=i;
-            printf("i is %d\n",i );
+            //printf("bb\n");
+            int* s=(int32_t*)malloc(sizeof(int32_t));
+            *s=i;
+            //printf("i is %d\n",i );
             printf("s is %d\n",s );
-            g_sequence_append(zero_gsequence,&s);
+            g_sequence_append(zero_gsequence,s);
             i=i+2;
         }
         else if (m==1&&n==1)
         {
-            update_RTM_to_same_backupversion(j,cu_bv);
+            update_RTM_to_same_backupversion(j-1,cu_bv);
             i=i+2;
         }
 	}
 
-    g_sequence_free(zero_gsequence);
-    printf("bbbbb\n");
+
+    //check_g_sequence(zero_gsequence);
+    
 	check_last_container_bit_table(zero_gsequence);
+
+    g_sequence_free(zero_gsequence);
 }
+
+
+
+
+
 
 
 void check_write_cce()
