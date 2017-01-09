@@ -447,7 +447,7 @@ void update_container_bit_table_and_RTM(int backupversion)
     }
     printf("update container_bit_table successful!\n");
 
-    printf("update container_bit_table is as follow!\n");
+ /*   printf("update container_bit_table is as follow!\n");
     int k;
     for (k = 1; k <=1000; k++)
 	{
@@ -456,7 +456,7 @@ void update_container_bit_table_and_RTM(int backupversion)
 		{
 			printf("\n");
 		}
-	}
+	}*/
 
 /*	printf("update reference time map as follow!\n");
 	//struct RTMdate *Rtemp;
@@ -902,11 +902,6 @@ int* get_newest_container_bit_table(int times)
     //times*sizeof(CBT)
     if ((fp = fopen(CBTpath, "r"))) {
         
-      /*  if ()
-        {
-            fread(cbt, sizeof(CBT),1, fp);
-        }*/
-        
         fseek(fp,-times*sizeof(CBT),SEEK_END);
         fread(cbt, sizeof(CBT),1, fp);
         
@@ -987,43 +982,78 @@ int32_t get_CBT_array(int32_t n,int *array)
 //n means the number of n-th container 
 void update_RTM_to_same_backupversion(int n,int backupversion)
 {
-	
+	printf("a1a1a1\n");
 	struct RTMdata *htemp;
 	htemp=RTMhead;
+
+    printf("n is %d\n",n );
 	int i=0;
 	while(i<n)
 	{
 		htemp=htemp->next;
+        i=i+1;
 	}
+    printf("a2a2a2\n");
 	int j=0;
 	while((htemp->rtm[j]!=backupversion)&&(j<htemp->len))
 	{
 		htemp->rtm[j]=backupversion;
 		j++;
 	}
-    printf("hello lllllllllll\n");
+    printf("a3a3a3\n");
 }
 
 
 static int last=1;
 
-static int container_count_gc=0;//用来记录访问的container的数目；
+//static int container_count_gc=0;//用来记录访问的container的数目；
 
 //数组用来存放上次检测为00的位置；
 
-void check_last_container_bit_table(int* a,int n)
+void check_last_container_bit_table(GSequence *seq)
 {
-    int check_number=n;
+    int check_number=g_sequence_get_length(seq);
+    
     int* check_arr=get_newest_container_bit_table(last+1);
-    int bv=check_arr[0];
+    
+    int check_bv=check_arr[0];
     int j=0;
-    int *zero_arr;
+    //int *zero_arr;
 
-    int uncheck_container=0;
-    while(j<n)
+    GSequence *zero_new_gsequence=g_sequence_new(free);
+    //int uncheck_container=0;
+
+    GSequenceIter* iter=g_sequence_get_begin_iter(seq);
+    GSequenceIter* end = g_sequence_get_end_iter(seq);
+
+    while(iter!=end)
     {
+        int *pos=g_sequence_get(iter);
+        int m,n;
+        m=get_CBT_array(*pos,check_arr);
+        n=get_CBT_array(*pos+1,check_arr);
 
-        if ((get_CBT_array(a[j],check_arr)==0)&&(get_CBT_array(a[j]+1,check_arr)==1)||(get_CBT_array(a[j],check_arr)==1)&&(get_CBT_array(a[j]+1,check_arr)==0))
+        if ((m==0&&n==1)||(m==1&&n==0))
+        {
+            
+            iter=g_sequence_iter_next(iter);
+            continue;
+        }
+        else if(m==1&&n==1)
+        {
+            update_RTM_to_same_backupversion(*pos,check_bv);
+            iter=g_sequence_iter_next(iter);
+            continue;
+        }
+        else if (m==0&&n==0)
+        {
+            g_sequence_append(zero_new_gsequence,pos);
+            iter=g_sequence_iter_next(iter);
+        }
+
+
+
+   /*     if ((get_CBT_array(a[j],check_arr)==0)&&(get_CBT_array(a[j]+1,check_arr)==1)||(get_CBT_array(a[j],check_arr)==1)&&(get_CBT_array(a[j]+1,check_arr)==0))
         {
             check_number=check_number-1;
             j++;
@@ -1042,79 +1072,182 @@ void check_last_container_bit_table(int* a,int n)
         	j++;
             uncheck_container++;
             zero_arr[uncheck_container]=zero_arr[j];
-        }
+        }*/
     }
 
-    while(uncheck_container!=0)
+    g_sequence_free(seq);
+
+    GSequenceIter* new_iter=g_sequence_get_begin_iter(zero_new_gsequence);
+    GSequenceIter* new_end = g_sequence_get_end_iter(zero_new_gsequence);
+
+    while(new_iter!=new_end)
     {
-        check_last_container_bit_table(zero_arr,uncheck_container);
+        check_last_container_bit_table(zero_new_gsequence);
     }
 }
-
 
 
 void get_real_reference_time_map()
 {
-	
-	read_RTM_from_disk();
+    int cce=get_container_bit_end();
+    printf("the ans is %d\n",cce);
+	//read_RTM_from_disk();
+    read_RTM_from_disk_in_gc(cce);
+
+    //show_RTM();
+    //printf("container_count_start %d\n",container_count_start );
 
     //首先得到最新版本的container_bit_table
-	int uncheck_container=0;//用来记录属性为00的container的数目。
+	//int uncheck_container=0;//用来记录属性为00的container的数目。
 
 	//int32_t* arr=(int32_t*)malloc(sizeof(int32_t)*container_size);
 	int32_t *arr=get_newest_container_bit_table(last);
-    printf("aaaaaa\n");
-
-    int k;
-    for (k = 1; k <=1000; k++)
-    {
-        printf(" %d",get_CBT_array(k,arr));
-        if (k%32==0)
-        {
-            printf("\n");
-        }
-    }
-    printf("jjjjjjjjjjjjjjjjjj\n");
-
+   
 	int cu_bv=arr[0];
-	int *zero_arr;
-	int i;
-	for ( i= 33; i <= container_size*32; i+2)
+    //printf("the cu_bv is %d \n",cu_bv);
+	//int *zero_arr;
+
+    //用队列做！
+    GSequence *zero_gsequence=g_sequence_new(free);
+    //zero_gsequence=g_sequence_new(free);
+
+    int border=cce*2+33;
+    printf("border is %d\n",border );
+    //for(i=33; i<=container_size*32; i+2)
+    int i=33;
+    int j=0;
+
+	while(i<border)
 	{
+        
 		//container_count_gc++;
-
-		//属性为01或者10
-		if((get_CBT_array(i,arr)==0)&&(get_CBT_array(i+1,arr)==1)||(get_CBT_array(i,arr)==1)&&(get_CBT_array(i+1,arr)==0))
-		{
-			continue;
-		}
-
-		//属性为00
-		if ((get_CBT_array(i,arr)==0)&&(get_CBT_array(i+1,arr)==0))
-		{
-			uncheck_container++;
-			zero_arr[uncheck_container]=i;
-		}
-
-		//属性为11
-		if ((get_CBT_array(i,arr)==1)&&(get_CBT_array(i+1,arr)==1))
-		{
-			update_RTM_to_same_backupversion(i,cu_bv);
-		}
+        //printf("1");
+        int m,n;
+        m=get_CBT_array(i,arr);
+        n=get_CBT_array(i+1,arr);
+        j=j+1;
+        printf("m =%d, n=%d, i =%d\n",m,n,i);
+        
+        if ((m==0&&n==1)||(m==1&&n==0))
+        {
+            i=i+2;
+            continue;
+        }
+        else if (m==0&&n==0)
+        {
+        
+            printf("bb\n");
+            int s=(int32_t*)malloc(sizeof(int32_t));
+            s=i;
+            printf("i is %d\n",i );
+            printf("s is %d\n",s );
+            g_sequence_append(zero_gsequence,&s);
+            i=i+2;
+        }
+        else if (m==1&&n==1)
+        {
+            update_RTM_to_same_backupversion(j,cu_bv);
+            i=i+2;
+        }
 	}
 
+    g_sequence_free(zero_gsequence);
     printf("bbbbb\n");
+	check_last_container_bit_table(zero_gsequence);
+}
 
-	check_last_container_bit_table(zero_arr,uncheck_container);
 
+void check_write_cce()
+{
+    int n=get_container_bit_end();
+    printf("the cce is %d\n",n );
 }
 
 
 
+int get_container_bit_end()
+{
+    sds ccepath = sdsdup(destor.working_directory);
+    ccepath = sdscat(ccepath, "/container_count_end.cce");
+    int cce=(int64_t*)malloc(sizeof(int64_t));
+    if((fp = fopen(ccepath, "r"))) 
+    {
+    
+        fread(&cce, sizeof(int64_t),1,fp);
+        fclose(fp);
+    }
+
+    sdsfree(ccepath);
+    
+    NOTICE("get container_count_end successfully");
+
+    return cce;
+}
 
 
 
+void write_container_count_end_to_disk() 
+{
+    sds ccepath = sdsdup(destor.working_directory);
+    ccepath = sdscat(ccepath, "/container_count_end.cce");
+
+    //sds cbt_fname = sdsdup(CBTpath);
+    //cbt_fname = sdscat(cbt_fname, "container_bit_table");
+    //printf("1111111111\n");
+    FILE *fp;
+    if((fp = fopen(ccepath, "w"))) 
+    {
+        /* Read if exists. */
+        fwrite(&container_count_end, sizeof(int64_t), 1, fp);
+        fclose(fp);
+    }
+    sdsfree(ccepath);
+    NOTICE("write container_count_end to disk successfully");
+     
+}
 
 
+void  read_RTM_from_disk_in_gc(int broad) 
+{
+ 
+    sds RTMpath = sdsdup(destor.working_directory);
+    RTMpath = sdscat(RTMpath, "/reference_time_map.rtm");
+    FILE *fp;
+    RTMhead = NULL;
+    if((fp = fopen(RTMpath, "r+"))) 
+    {
+        
+        struct RTMdata* tmp;
+        struct RTMdata* tmp1;
+        int i=0;
+        while((!feof(fp))&&(i<broad))
+        {
+        
+            tmp = (struct RTMdata*)malloc(sizeof(struct RTMdata));
+            fread(&tmp->id, sizeof(tmp->id), 1, fp);
+            fread(&tmp->len, sizeof(tmp->len), 1, fp);
+          
+            
+            tmp->rtm=(int16_t*)malloc(sizeof(int16_t)*(tmp->len));
+            
+            fread(tmp->rtm, sizeof(int16_t), tmp->len, fp);
+           
+            if(RTMhead == NULL){
+                tmp1=tmp;   
+                RTMhead=tmp1;
+            }else{
+                tmp1->next=tmp;
+                tmp1=tmp1->next;
+            }
+            tmp1->next=NULL;
+            i=i+1;
+        }    
+        fclose(fp);
+    }
+    sdsfree(RTMpath);
 
+    NOTICE("read_RTM_from_disk in gc successfully");
+
+    //return RTMhead;
+}
 
