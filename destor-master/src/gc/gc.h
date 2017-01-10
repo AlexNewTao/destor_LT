@@ -15,30 +15,20 @@ time: 2016.11
 #define GC_H
 
 
-typedef struct gc_list_data
-{
-	int64_t gc_containerid;
-	int32_t gc_chunk_shift;
 
-};
-
-typedef struct gc_list_type
-{
-	struct gc_list_data gc_data;
-	struct gc_list_type *next;
-};
-
-struct gc_list_type *gchead;
+struct gc_list_type *gchead=NULL;
 
 //static int64_t gc_count=0;
-
-void gc_list_AddEnd (struct gc_list_data *gc_data);
+void Destory_gc_list();
+void gc_list_AddEnd (struct gc_list_type *gc_data);
 
 void start_garbage_collection();
 
 void garbage_collection_method_selection();
 
 void gc_reference_time_map();
+
+void get_delete_message();
 
 void gc_reference_count();
 
