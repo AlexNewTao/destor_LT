@@ -152,7 +152,7 @@ void update_container_bit_table_attribute(int shift,int attribute);
 
 //两个备份版本的container_bit_table进行或操作
 
-int* merge_or_container_bit_table(int backupversion1,int backupversion2);
+int* merge_container_bit_table(int* v1,int* v2);
 
 //把二位数组的第一位用来存储备份版本数，16位或者32位也无所谓。但是要注意边界。
 //得到container_bit_table
@@ -193,6 +193,7 @@ void write_RTM_to_disk() ;
 
 void Init_RTMlist();
 
+void show_RTM();
 
 void RTMlist_AddEnd (struct RTMdata* rtmdata);
 
@@ -217,9 +218,19 @@ int get_CBT_array(int n,int *array);
 void update_RTM_to_same_backupversion(int n,int backupversion);
 
 
-void check_last_container_bit_table(int*a,int n);
 
+void check_last_container_bit_table(GSequence *seq);
 void get_real_reference_time_map();
+
+
+
+
+void check_write_cce();
+int get_container_bit_end();
+void write_container_count_end_to_disk();
+
+
+
 
 
 #endif
