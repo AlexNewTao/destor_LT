@@ -229,7 +229,7 @@ void check_write_cce();
 int get_container_bit_end();
 void write_container_count_end_to_disk();
 
-
+void Destory_RTM();
 
 
 

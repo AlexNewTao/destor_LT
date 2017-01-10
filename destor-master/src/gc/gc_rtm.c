@@ -1182,7 +1182,7 @@ static void check_g_sequence(GSequence *seq)
 void get_real_reference_time_map()
 {
     int cce=get_container_bit_end();
-    printf("the ans is %d\n",cce);
+    //printf("the ans is %d\n",cce);
 	//read_RTM_from_disk();
     read_RTM_from_disk_in_gc(cce);
 
@@ -1204,7 +1204,7 @@ void get_real_reference_time_map()
     //zero_gsequence=g_sequence_new(free);
 
     int border=cce*2+33;
-    printf("border is %d\n",border );
+    //printf("border is %d\n",border );
     //for(i=33; i<=container_size*32; i+2)
     int i=33;
     int j=0;
@@ -1218,7 +1218,7 @@ void get_real_reference_time_map()
         m=get_CBT_array(i,arr);
         n=get_CBT_array(i+1,arr);
         j=j+1;
-        printf("m =%d, n=%d, i =%d,j=%d\n",m,n,i,j);
+        //printf("m =%d, n=%d, i =%d,j=%d\n",m,n,i,j);
         
         if ((m==0&&n==1)||(m==1&&n==0))
         {
@@ -1232,7 +1232,7 @@ void get_real_reference_time_map()
             int* s=(int32_t*)malloc(sizeof(int32_t));
             *s=i;
             //printf("i is %d\n",i );
-            printf("s is %d\n",s );
+            //printf("s is %d\n",s );
             g_sequence_append(zero_gsequence,s);
             i=i+2;
         }
@@ -1351,3 +1351,15 @@ void  read_RTM_from_disk_in_gc(int broad)
     //return RTMhead;
 }
 
+
+void Destory_RTM()
+{
+    struct RTMdata*p = RTMhead;
+    while(RTMhead!=NULL)
+    {
+         p = RTMhead;
+         free(p->rtm);
+         free(p);
+         RTMhead = RTMhead->next;
+    }
+}
