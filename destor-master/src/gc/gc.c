@@ -238,14 +238,14 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 	//get_delete_message();
 }*/
 
-/*int64_t gc_reference_time_map_alone(int deleteversion)
+int64_t gc_reference_time_map_alone(int deleteversion)
 {
 	//int *cbt;
 	//cbt=get_container_bit_table(deleteversion);//得到删除版本的container_bit_map
 
 	get_real_reference_time_map();//得到实际的RTM
 	
-	//show_RTM();
+	show_RTM();
 
 	struct RTMdata *htemp;
 	htemp = RTMhead;
@@ -268,12 +268,13 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 		htemp = htemp->next;
 	}
 
+	Destory_RTM();
 	//Destory_gc_list();
 	
 	return gc_count;
-}*/
+}
 
-int64_t gc_reference_time_map_alone(int deleteversion)
+/*int64_t gc_reference_time_map_alone(int deleteversion)
 {
 
 	get_real_reference_time_map();//得到实际的RTM
@@ -338,7 +339,7 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 	g_sequence_free(check_gsequence);
 	return gc_count;
 }
-
+*/
 /*struct gc_list_type
 {
 	int64_t gc_containerid;
@@ -444,7 +445,7 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 }*/
 //批量回收
 
-int64_t  gc_reference_time_map_patch(int deleteversion)
+/*int64_t  gc_reference_time_map_patch(int deleteversion)
 {
 	//int *cbt;
 	//cbt=get_container_bit_table(deleteversion);//得到删除版本的container_bit_map
@@ -469,14 +470,51 @@ int64_t  gc_reference_time_map_patch(int deleteversion)
 			{
 				htemp->rtm[i]=0;
 			}*/
+/*			i=i+1;
+		}
+		htemp = htemp->next;
+	}
+
+	Destory_RTM();
+	//根据RTM_check_list,检测RTM，得到实际回收的大小
+	return gc_count;
+	//get_delete_message();
+}*/
+
+
+int64_t gc_reference_time_map_patch(int deleteversion)
+{
+	//int *cbt;
+	//cbt=get_container_bit_table(deleteversion);//得到删除版本的container_bit_map
+
+	get_real_reference_time_map();//得到实际的RTM
+	
+	show_RTM();
+
+	struct RTMdata *htemp;
+	htemp = RTMhead;
+	while(htemp!=NULL)
+	{
+		int i=0;
+			//printf("gc111\n");
+		while(i<htemp->len)
+		{
+			if (htemp->rtm[i]<=deleteversion)
+			{       		
+				gc_count=gc_count+1;
+			}
+			else
+			{
+				htemp->rtm[i]=0;
+			}
 			i=i+1;
 		}
 		htemp = htemp->next;
 	}
-	//根据RTM_check_list,检测RTM，得到实际回收的大小
+
+	Destory_RTM();
+	//Destory_gc_list();
+	
 	return gc_count;
-	//get_delete_message();
 }
-
-
 
