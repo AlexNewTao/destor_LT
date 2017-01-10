@@ -22,8 +22,8 @@ time: 2016.11
 #include "gc.h"
 #include "../destor.h"
 
-
-struct gc_list_type{
+static int64_t gc_count=0;
+/*struct gc_list_type{
 	int64_t gc_containerid;
 	int32_t gc_chunk_shift;
 	struct gc_list_type *next;
@@ -32,7 +32,7 @@ struct gc_list_type{
 
 
 
-static int64_t gc_count=0;
+
 void Destory_gc_list()
 {
     struct gc_list_type *p = gchead;
@@ -70,7 +70,7 @@ void gc_list_AddEnd(struct gc_list_type* gc_data)
         {
         	htemp=gchead;
         	printf("gc.c73\n");
-        
+
         	while(htemp->next!=NULL)
         	{
             	htemp=htemp->next;
@@ -81,7 +81,8 @@ void gc_list_AddEnd(struct gc_list_type* gc_data)
         }
         printf("gc.c80\n");
     }
-}
+}*/
+
 /*void gc_list_AddEnd (struct gc_list_data *gc_data)
 {
     struct gc_list_type *node,*htemp;
@@ -236,14 +237,14 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 	//get_delete_message();
 }*/
 
-int64_t gc_reference_time_map_alone(int deleteversion)
+/*int64_t gc_reference_time_map_alone(int deleteversion)
 {
 	//int *cbt;
 	//cbt=get_container_bit_table(deleteversion);//得到删除版本的container_bit_map
 
 	get_real_reference_time_map();//得到实际的RTM
 	
-	show_RTM();
+	//show_RTM();
 
 	struct RTMdata *htemp;
 	htemp = RTMhead;
@@ -253,45 +254,30 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 			//printf("gc111\n");
 		while(i<htemp->len)
 		{
-			printf("gc444\n");
 			if (htemp->rtm[i]==deleteversion)
-			{
-				printf("5555, %d\n",sizeof(struct gc_list_type));
-				struct gc_list_type *gc_data=(struct gc_list_type *)malloc(sizeof(struct gc_list_type));
-				printf("66666");
-				gc_data->gc_containerid=0;//htemp->id;
-				printf("htemp->id is %d\n",htemp->id );
-				//gc_data->gc_chunk_shift=i+1;
-				gc_data->next = NULL;
-				
-				//gc_data = NULL;
-				//printf("2222\n");
-				//gc_list_AddEnd(gc_data); 
-				//free(gc_data);
-				//printf("11111111\n");			       		
+			{       		
 				gc_count=gc_count+1;
+			}
+			else
+			{
+				htemp->rtm[i]=0;
 			}
 			i=i+1;
 		}
-		printf("gc333\n");
-		sleep(1);
 		htemp = htemp->next;
 	}
-	printf("4444\n");
 
-	Destory_gc_list();
+	//Destory_gc_list();
 	
 	return gc_count;
-}
+}*/
 
-/*int64_t gc_reference_time_map_alone(int deleteversion)
+int64_t gc_reference_time_map_alone(int deleteversion)
 {
-	//int *cbt;
-	//cbt=get_container_bit_table(deleteversion);//得到删除版本的container_bit_map
 
 	get_real_reference_time_map();//得到实际的RTM
 	
-	show_RTM();
+	//show_RTM();
 
 	int *check_arr=get_merge_container_bit_table(deleteversion);
 	GSequence *check_gsequence=g_sequence_new(free);
@@ -307,7 +293,6 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 		}
 	}
 
-	
 	struct RTMdata *htemp;
 	htemp = RTMhead;
 	int j=0;
@@ -335,18 +320,12 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 			while(i<htemp->len)
 			{
 				if (htemp->rtm[i]==deleteversion)
-				{
-					struct gc_list_type *gc_data=(struct gc_list_type *)malloc(sizeof(struct gc_list_type));
-				
-					gc_data->gc_containerid=htemp->id;
-				
-					gc_data->gc_chunk_shift=i+1;
-				
-					gc_list_AddEnd(gc_data); 
-					gc_data = NULL;
-					free(gc_data);
-						       		
+				{       		
 					gc_count=gc_count+1;
+				}
+				else
+				{
+					htemp->rtm[i]=0;
 				}
 				i=i+1;
 			}
@@ -355,13 +334,10 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 		}
 		
 	}
-
-
-	Destory_gc_list();
-
+	//Destory_gc_list();
 	g_sequence_free(check_gsequence);
 	return gc_count;
-}*/
+}
 
 /*struct gc_list_type
 {
@@ -475,22 +451,25 @@ int64_t  gc_reference_time_map_patch(int deleteversion)
 	
 	get_real_reference_time_map();//得到实际的RTM
 
-	while(RTMhead!=NULL)
+	struct RTMdata *htemp;
+	htemp = RTMhead;
+
+	while(htemp!=NULL)
 	{
 		int i=0;
-		while(i<RTMhead->len)
+		while(i<htemp->len)
 		{
-			if (RTMhead->rtm[i++]<=deleteversion)
-			{
-				struct gc_list_type *gc_data;
-				gc_data=(struct gc_list_type *)malloc(sizeof(struct gc_list_type));
-				gc_data->gc_containerid=RTMhead->id;
-				gc_data->gc_chunk_shift=i+1;
-				gc_list_AddEnd(gc_data);
+			if (htemp->rtm[i++]<=deleteversion)
+			{      		
 				gc_count=gc_count+1;
 			}
+			else
+			{
+				htemp->rtm[i]=0;
+			}
+			i=i+1;
 		}
-		RTMhead = RTMhead->next;
+		htemp = htemp->next;
 	}
 	//根据RTM_check_list,检测RTM，得到实际回收的大小
 
