@@ -179,6 +179,7 @@ void gc_reference_time_map()
 		printf("worry deletway choose!\n");
 	}
 	get_delete_message();
+	printf("finish garbage collection\n");
 }
 
 void get_delete_message()
@@ -277,7 +278,7 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 
 	get_real_reference_time_map();//得到实际的RTM
 	
-	//show_RTM();
+	show_RTM();
 
 	int *check_arr=get_merge_container_bit_table(deleteversion);
 	GSequence *check_gsequence=g_sequence_new(free);
@@ -285,7 +286,7 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 	int i;
 	for (i= 33; i <= n*2; i=i+2)
 	{
-		if (((get_CBT_array(i,check_arr)==1)||(get_CBT_array(i+1,check_arr)==1))
+		if ((get_CBT_array(i,check_arr)==1)||(get_CBT_array(i+1,check_arr)==1))
 		{
 			int *s=(int32_t*)malloc(sizeof(int32_t));
 			*s=(i-33)/2;
@@ -332,7 +333,6 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 			htemp = htemp->next;
 			j=j+1;
 		}
-		
 	}
 	//Destory_gc_list();
 	g_sequence_free(check_gsequence);
@@ -451,6 +451,8 @@ int64_t  gc_reference_time_map_patch(int deleteversion)
 	
 	get_real_reference_time_map();//得到实际的RTM
 
+	show_RTM();
+
 	struct RTMdata *htemp;
 	htemp = RTMhead;
 
@@ -463,19 +465,17 @@ int64_t  gc_reference_time_map_patch(int deleteversion)
 			{      		
 				gc_count=gc_count+1;
 			}
-			else
+			/*else
 			{
 				htemp->rtm[i]=0;
-			}
+			}*/
 			i=i+1;
 		}
 		htemp = htemp->next;
 	}
 	//根据RTM_check_list,检测RTM，得到实际回收的大小
-
 	return gc_count;
 	//get_delete_message();
-
 }
 
 
