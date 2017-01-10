@@ -372,7 +372,7 @@ void set_container_bit_table(int n,int zero_or_one)
 
 }
 
-static void show_RTM()
+void show_RTM()
 {
     printf("update reference time map as follow!\n");
     
@@ -617,8 +617,69 @@ int* merge_or_container_bit_table(int backupversion1,int backupversion2)
 	return new_container_bit_table;
 }
 
+int* get_merge_container_bit_table(int deleteversion)
+{
+    if (deleteversion=0)
+    {
+        return;
+    }
+    if (deleteversion=1)
+    {
+        int* ans=get_container_bit_table(1);
+        return ans;
+    }
+
+    int *ans=get_container_bit_table(1);
+    int i;
+    for ( i= 1; i < deleteversion; i++)
+    {
+        int *ans2=get_container_bit_table(i+1);
+        ans=merge_container_bit_table(ans,ans2);
+    }
+    return ans;
+}
+
+int* merge_container_bit_table(int* v1,int* v2)
+{
+    int n=get_container_bit_end();
+    int *ans=malloc(sizeof(CBT));
+    int i;
+    for (i= 33; i <= n*2; i=i+1)
+    {
+        if ((get_CBT_array(i,v1)==1)||(get_CBT_array(i,v2)==1))
+        {
+            set_CBT_array(i,1,ans);
+        }
+        else 
+        {
+            continue;
+        }
+    }
+    return ans;
+}
 
 
+int* get_container_bit_table(int times)
+{
+
+    sds CBTpath = sdsdup(destor.working_directory);
+    CBTpath = sdscat(CBTpath, "/container_bit_table.cbt");
+    
+    int* cbt=(int32_t *)malloc(sizeof(CBT));
+    //int cbt[sizeof(CBT)]={0};
+    //times*sizeof(CBT)
+    if ((fp = fopen(CBTpath, "r"))) {
+        
+        fseek(fp,(times-1)*sizeof(CBT),SEEK_SET);
+        fread(cbt, sizeof(CBT),1, fp);
+        
+
+        fclose(fp);
+    }
+    sdsfree(CBTpath);
+    //NOTICE("get newest container bit table successfully");
+    return cbt;
+}
 
 /*int* get_newest_container_bit_map(int backupversion)
 {
@@ -935,14 +996,14 @@ void show_cbt()
 
 }
 
-int get_CBT(int n)
+/*int get_CBT(int n)
 {
 	int index_loc;
 	int bit_loc;
 	index_loc=n>>SHIFT;//等价于n/32。
 	bit_loc=n&MASK;//等价于n%32。
 	return CBT[index_loc]<<bit_loc;
-}
+}*/
 
 /*int get_CBT_array(int n,int *array)
 {
@@ -977,6 +1038,31 @@ int32_t get_CBT_array(int32_t n,int *array)
     }
     else
         return 1;
+}
+
+void set_CBT_array(int n,int zero_or_one,int *array)
+{
+    if (zero_or_one==0)
+    {
+        return;
+    }
+    else if (zero_or_one==1)
+    {
+        int32_t index_loc;
+        int32_t bit_loc=0;
+        int check=n%MASK;
+        if (check==0)
+        {
+            index_loc=(n>>SHIFT)-1;
+            array[index_loc]|=(1<<31);
+        }
+        else
+        {
+            index_loc=n>>SHIFT;
+            bit_loc=n%MASK-1;
+            array[index_loc]|=(1<<bit_loc);
+        }
+    }
 }
 
 //n means the number of n-th container 
@@ -1025,8 +1111,11 @@ static int last=1;
 void check_last_container_bit_table(GSequence *seq)
 {
     int check_number=g_sequence_get_length(seq);
-    
-    int* check_arr=get_newest_container_bit_table(last+1);
+
+    last=last+1;
+
+    //printf("check checkcheckcheck\n");
+    int* check_arr=get_newest_container_bit_table(last);
     
     int check_bv=check_arr[0];
     int j=0;
@@ -1063,11 +1152,10 @@ void check_last_container_bit_table(GSequence *seq)
             iter=g_sequence_iter_next(iter);
         }
     }
-
     GSequenceIter* new_iter=g_sequence_get_begin_iter(zero_new_gsequence);
     GSequenceIter* new_end = g_sequence_get_end_iter(zero_new_gsequence);
 
-    while(new_iter!=new_end)
+    if(new_iter!=new_end)
     {
         check_last_container_bit_table(zero_new_gsequence);
     }
