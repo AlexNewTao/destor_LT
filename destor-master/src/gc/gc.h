@@ -40,7 +40,7 @@ int64_t gc_reference_time_map_alone(int deleteversion);
 
 int64_t gc_reference_time_map_patch(int deleteversion);
 
-
+int array_contains(int check,int *array,int border);
 
 
 #endif                                      

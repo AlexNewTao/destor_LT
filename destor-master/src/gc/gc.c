@@ -304,8 +304,7 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 int64_t gc_reference_time_map_alone(int deleteversion)
 {
 	printf("11111\n");
-	check_write_cce();
-	int n = get_container_bit_end();
+	
 	printf("the n is %d\n",n);
 
 	get_real_reference_time_map();
@@ -319,6 +318,7 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 
 	printf("222222\n");
 
+	int n = get_container_bit_end();
 	//得到实际的RTM
 	
 	//show_RTM();
@@ -355,6 +355,7 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 		printf("ee355\n");
 
 		int *check_arr=get_merge_container_bit_table(deleteversion);
+
 		int i;
 		printf("ee359\n");
 		int j=0;
