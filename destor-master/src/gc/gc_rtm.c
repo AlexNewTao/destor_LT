@@ -619,24 +619,27 @@ int* merge_or_container_bit_table(int backupversion1,int backupversion2)
 
 int* get_merge_container_bit_table(int deleteversion)
 {
-    if (deleteversion=0)
+  
+    if (deleteversion==1)
     {
-        return;
+        printf("11111\n");
+        int* ans=get_container_bit_table(deleteversion);
+        printf("2222\n");
+        return ans;
     }
-    if (deleteversion=1)
+    else
     {
-        int* ans=get_container_bit_table(1);
+        int *ans=get_container_bit_table(1);
+        int i;
+        for ( i= 1; i < deleteversion; i++)
+        {
+            int *ans2=get_container_bit_table(i+1);
+            ans=merge_container_bit_table(ans,ans2);
+        }
         return ans;
     }
 
-    int *ans=get_container_bit_table(1);
-    int i;
-    for ( i= 1; i < deleteversion; i++)
-    {
-        int *ans2=get_container_bit_table(i+1);
-        ans=merge_container_bit_table(ans,ans2);
-    }
-    return ans;
+  
 }
 
 int* merge_container_bit_table(int* v1,int* v2)
@@ -652,7 +655,7 @@ int* merge_container_bit_table(int* v1,int* v2)
         }
         else 
         {
-            continue;
+            set_CBT_array(i,0,ans);
         }
     }
     return ans;
@@ -661,22 +664,30 @@ int* merge_container_bit_table(int* v1,int* v2)
 
 int* get_container_bit_table(int times)
 {
+    
 
     sds CBTpath = sdsdup(destor.working_directory);
     CBTpath = sdscat(CBTpath, "/container_bit_table.cbt");
-    
+    printf("ccc668\n");
+    //int* cbt=(int32_t*)malloc(sizeof(CBT));
+    //printf("sizeof(CBT)%d\n",sizeof(CBT) );
     int* cbt=(int32_t *)malloc(sizeof(CBT));
     //int cbt[sizeof(CBT)]={0};
     //times*sizeof(CBT)
+    //int cbt[container_size];
+
     if ((fp = fopen(CBTpath, "r"))) {
         
         fseek(fp,(times-1)*sizeof(CBT),SEEK_SET);
-        fread(cbt, sizeof(CBT),1, fp);
         
-
+        fread(cbt, sizeof(CBT),1, fp);
+       
         fclose(fp);
+        
     }
+   
     sdsfree(CBTpath);
+
     //NOTICE("get newest container bit table successfully");
     return cbt;
 }
@@ -1243,12 +1254,10 @@ void get_real_reference_time_map()
         }
 	}
 
-
     //check_g_sequence(zero_gsequence);
-    
 	check_last_container_bit_table(zero_gsequence);
-
     g_sequence_free(zero_gsequence);
+
 }
 
 

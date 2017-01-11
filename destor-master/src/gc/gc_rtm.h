@@ -226,9 +226,10 @@ void get_real_reference_time_map();
 
 
 void check_write_cce();
+
 int get_container_bit_end();
 void write_container_count_end_to_disk();
-
+void  read_RTM_from_disk_in_gc(int broad);
 void Destory_RTM();
 
 
