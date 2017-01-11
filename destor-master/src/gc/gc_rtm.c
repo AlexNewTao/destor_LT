@@ -619,12 +619,14 @@ int* merge_or_container_bit_table(int backupversion1,int backupversion2)
 
 int* get_merge_container_bit_table(int deleteversion)
 {
+    int* ans;
   
     if (deleteversion==1)
     {
-        printf("11111\n");
-        int* ans=get_container_bit_table(deleteversion);
-        printf("2222\n");
+        printf("get_merge_container_bit_table 625\n");
+        ans=get_container_bit_table(deleteversion);
+        //ans=get_newest_container_bit_table(3);
+        printf("get_merge_container_bit_table 627\n");
         return ans;
     }
     else
@@ -671,11 +673,11 @@ int* get_container_bit_table(int times)
     printf("ccc668\n");
     //int* cbt=(int32_t*)malloc(sizeof(CBT));
     //printf("sizeof(CBT)%d\n",sizeof(CBT) );
-    int* cbt=(int32_t *)malloc(sizeof(CBT));
+    int32_t* cbt=(int32_t *)malloc(sizeof(CBT));
     //int cbt[sizeof(CBT)]={0};
     //times*sizeof(CBT)
     //int cbt[container_size];
-
+    printf("ccc680\n");
     if ((fp = fopen(CBTpath, "r"))) {
         
         fseek(fp,(times-1)*sizeof(CBT),SEEK_SET);
@@ -1193,7 +1195,8 @@ static void check_g_sequence(GSequence *seq)
 void get_real_reference_time_map()
 {
     int cce=get_container_bit_end();
-    //printf("the ans is %d\n",cce);
+    
+    printf("the ans is %d\n",cce);
 	//read_RTM_from_disk();
     read_RTM_from_disk_in_gc(cce);
 
@@ -1207,9 +1210,10 @@ void get_real_reference_time_map()
 	int32_t *arr=get_newest_container_bit_table(last);
    
 	int cu_bv=arr[0];
-    //printf("the cu_bv is %d \n",cu_bv);
+    printf("the cu_bv is %d \n",cu_bv);
 	//int *zero_arr;
 
+    printf("test111\n");
     //用队列做！
     GSequence *zero_gsequence=g_sequence_new(free);
     //zero_gsequence=g_sequence_new(free);
@@ -1219,10 +1223,9 @@ void get_real_reference_time_map()
     //for(i=33; i<=container_size*32; i+2)
     int i=33;
     int j=0;
-
+    printf("test222\n");
 	while(i<border)
 	{
-        
 		//container_count_gc++;
         //printf("1");
         int m,n;
@@ -1278,7 +1281,8 @@ int get_container_bit_end()
 {
     sds ccepath = sdsdup(destor.working_directory);
     ccepath = sdscat(ccepath, "/container_count_end.cce");
-    int cce=(int64_t*)malloc(sizeof(int64_t));
+    int64_t* cce=(int64_t*)malloc(sizeof(int64_t));
+
     if((fp = fopen(ccepath, "r"))) 
     {
     
