@@ -431,8 +431,50 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 
 	printf("the n is %d\n",n);
 	
+
+	int *new_check_arr1=get_merge_container_bit_table(1)
+
+	int j;
+
+	for ( j = 1; j < n; j++)
+	{
+		printf("%d", get_CBT_array(j,new_check_arr1));
+		if (j%32==0)
+		{
+			printf("\n");
+		}
+	}
+
+	printf("bbbbbbbbbb\n");
+	int *new_check_arr2=get_merge_container_bit_table(2)
+
+	int k;
+
+	for ( k = 1; k < n; k++)
+	{
+		printf("%d", get_CBT_array(k,new_check_arr2));
+		if (k%32==0)
+		{
+			printf("\n");
+		}
+	}
+
 	int *new_check_arr=get_merge_container_bit_table(deleteversion);
 
+
+	printf("aaaaaaaaaa\n");
+	int i;
+
+	for ( i = 1; i < n; i++)
+	{
+		printf("%d", get_CBT_array(i,new_check_arr));
+		if (i%32==0)
+		{
+			printf("\n");
+		}
+	}
+
+	printf("aaaaaaaaaa\n");
 	/*int* ans_arr=(int32_t*)malloc(sizeof(int32_t)*n);
 	int k;
 	for (k = 0; k < n; k++)
