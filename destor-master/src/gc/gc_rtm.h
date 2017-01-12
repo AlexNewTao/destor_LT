@@ -218,11 +218,11 @@ int get_CBT_array(int n,int *array);
 void update_RTM_to_same_backupversion(int n,int backupversion);
 
 
+void check_last_container_bit_table(GSequence *seq,int quit);
 
-void check_last_container_bit_table(GSequence *seq);
 void get_real_reference_time_map();
 
-
+int* get_first_container_bit_table();
 
 
 void check_write_cce();

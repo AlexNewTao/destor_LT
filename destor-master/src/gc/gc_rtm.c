@@ -1106,17 +1106,6 @@ void update_RTM_to_same_backupversion(int n,int backupversion)
 	struct RTMdata *htemp;
 	htemp=RTMhead;
 
-    /*struct RTMdata *testhtemp;
-    testhtemp=RTMhead;
-    int k=0;
-    while(testhtemp!=NULL)
-    {
-        testhtemp=testhtemp->next;
-        k++;
-    }
-    printf("k is %d\n",k );*/
-
-    //printf(" n is %d  ",n );
 	int i=0;
 	//while((i<n)&&(htemp->next!=NULL))
     while(i<n)
@@ -1132,23 +1121,39 @@ void update_RTM_to_same_backupversion(int n,int backupversion)
 		htemp->rtm[j]=backupversion;
 		j=j+1;
 	}
-    //printf("a3a3a3 \n");
+ 
 }
 
 
 static int last=1;
 
+
+static void check_g_sequence(GSequence *seq)
+{
+    GSequenceIter* new_iter=g_sequence_get_begin_iter(seq);
+    GSequenceIter* new_end = g_sequence_get_end_iter(seq);
+
+    while(new_iter!=new_end)
+    {
+        int *pos=g_sequence_get(new_iter);
+        
+        new_iter=g_sequence_iter_next(new_iter);
+
+        printf(" %d ",*pos);
+    }
+}
 //static int container_count_gc=0;//用来记录访问的container的数目；
 
 //数组用来存放上次检测为00的位置；
 
-void check_last_container_bit_table(GSequence *seq)
+void check_last_container_bit_table(GSequence *seq,int quit)
 {
     //int check_number=g_sequence_get_length(seq);
 
     last=last+1;
 
-    //printf("check checkcheckcheck\n");
+    printf("last now is %d\n",last);
+
     int* check_arr=get_newest_container_bit_table(last);
     
     int check_bv=check_arr[0];
@@ -1164,6 +1169,8 @@ void check_last_container_bit_table(GSequence *seq)
     while(iter!=end)
     {
         int *pos=g_sequence_get(iter);
+
+        printf("aaaa%d\n", *pos);
         int m,n;
         m=get_CBT_array(*pos,check_arr);
         n=get_CBT_array(*pos+1,check_arr);
@@ -1184,32 +1191,21 @@ void check_last_container_bit_table(GSequence *seq)
             iter=g_sequence_iter_next(iter);
         }
     }
-    GSequenceIter* new_iter=g_sequence_get_begin_iter(zero_new_gsequence);
-    GSequenceIter* new_end = g_sequence_get_end_iter(zero_new_gsequence);
-
-    if(new_iter!=new_end)
+    check_g_sequence(zero_new_gsequence);
+    //GSequenceIter* new_iter=g_sequence_get_begin_iter(zero_new_gsequence);
+    //GSequenceIter* new_end = g_sequence_get_end_iter(zero_new_gsequence);
+    printf("g_sequence_get_length is %d\n",g_sequence_get_length(zero_new_gsequence));
+    if(g_sequence_get_length(zero_new_gsequence)!=0)
     {
-        check_last_container_bit_table(zero_new_gsequence);
+        printf("aaaaaaa\n");
+        check_last_container_bit_table(zero_new_gsequence,quit);
     }
 
-    g_sequence_free(zero_new_gsequence);
+    //g_sequence_free(zero_new_gsequence);
     //free(check_arr);
 }
 
-static void check_g_sequence(GSequence *seq)
-{
-    GSequenceIter* new_iter=g_sequence_get_begin_iter(seq);
-    GSequenceIter* new_end = g_sequence_get_end_iter(seq);
 
-    while(new_iter!=new_end)
-    {
-        int *pos=g_sequence_get(new_iter);
-        
-        new_iter=g_sequence_iter_next(new_iter);
-
-        printf("the GSequence is %d\n",*pos);
-    }
-}
 
 
 void get_real_reference_time_map()
@@ -1227,7 +1223,7 @@ void get_real_reference_time_map()
 	int32_t *arr=get_newest_container_bit_table(last);
    
     int k;
-    for ( k = 1; k < n*2+33; k++)
+    for ( k = 1; k < cce*2+33; k++)
     {
         printf("%d", get_CBT_array(k,arr));
         if (k%32==0)
@@ -1236,7 +1232,7 @@ void get_real_reference_time_map()
         }
     }
 
-	/*int cu_bv=arr[0];
+	int cu_bv=arr[0];
     printf("the cu_bv is %d \n",cu_bv);
 	//int *zero_arr;
 
@@ -1248,7 +1244,6 @@ void get_real_reference_time_map()
     //for(i=33; i<=container_size*32; i+2)
     int i=33;
     int j=0;
-    printf("test222\n");
 	while(i<border)
 	{
 		//container_count_gc++;
@@ -1256,7 +1251,7 @@ void get_real_reference_time_map()
         int m,n;
         m=get_CBT_array(i,arr);
         n=get_CBT_array(i+1,arr);
-        j=j+1;
+        
         //printf("m =%d, n=%d, i =%d,j=%d\n",m,n,i,j);
         
         if ((m==0&&n==1)||(m==1&&n==0))
@@ -1268,22 +1263,22 @@ void get_real_reference_time_map()
         
             //printf("bb\n");
             int* s=(int32_t*)malloc(sizeof(int32_t));
-            *s=i;
-            //printf("i is %d\n",i );
-            //printf("s is %d\n",s );
+            *s=j;
             g_sequence_append(zero_gsequence,s);
             i=i+2;
         }
         else if (m==1&&n==1)
         {
-            update_RTM_to_same_backupversion(j-1,cu_bv);
+            update_RTM_to_same_backupversion(j,cu_bv);
             i=i+2;
         }
+        j=j+1;
 	}
 
     //check_g_sequence(zero_gsequence);
-	check_last_container_bit_table(zero_gsequence);
-    g_sequence_free(zero_gsequence);*/
+	check_last_container_bit_table(zero_gsequence,cu_bv+1);
+    
+    g_sequence_free(zero_gsequence);
     //free(arr);
 }
 
