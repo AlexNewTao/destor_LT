@@ -432,11 +432,11 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 	printf("the n is %d\n",n);
 	
 
-	int *new_check_arr1=get_merge_container_bit_table(1)
+	int *new_check_arr1=get_container_bit_table(1);
 
 	int j;
 
-	for ( j = 1; j < n; j++)
+	for ( j = 1; j < n*2+33; j++)
 	{
 		printf("%d", get_CBT_array(j,new_check_arr1));
 		if (j%32==0)
@@ -445,12 +445,11 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 		}
 	}
 
-	printf("bbbbbbbbbb\n");
-	int *new_check_arr2=get_merge_container_bit_table(2)
+	printf("\n");
+	int *new_check_arr2=get_container_bit_table(2);
 
 	int k;
-
-	for ( k = 1; k < n; k++)
+	for ( k = 1; k < n*2+33; k++)
 	{
 		printf("%d", get_CBT_array(k,new_check_arr2));
 		if (k%32==0)
@@ -459,13 +458,32 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 		}
 	}
 
+
+	int *new_check_arr3=get_container_bit_table(3);
+
+	printf("\n");
+	int s;
+
+	for ( s = 1; s < n*2+33; s++)
+	{
+		printf("%d", get_CBT_array(s,new_check_arr3));
+		if (s%32==0)
+		{
+			printf("\n");
+		}
+	}
+
+	printf("\n");
+
+
+
 	int *new_check_arr=get_merge_container_bit_table(deleteversion);
 
 
-	printf("aaaaaaaaaa\n");
+	printf("\n");
 	int i;
 
-	for ( i = 1; i < n; i++)
+	for ( i = 1; i < n*2+33; i++)
 	{
 		printf("%d", get_CBT_array(i,new_check_arr));
 		if (i%32==0)
@@ -474,7 +492,11 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 		}
 	}
 
-	printf("aaaaaaaaaa\n");
+	printf("\n");
+
+
+
+
 	/*int* ans_arr=(int32_t*)malloc(sizeof(int32_t)*n);
 	int k;
 	for (k = 0; k < n; k++)
