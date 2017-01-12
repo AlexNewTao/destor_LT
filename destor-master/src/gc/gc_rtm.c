@@ -1223,20 +1223,25 @@ void get_real_reference_time_map()
     //show_RTM();
     //printf("container_count_start %d\n",container_count_start );
 
-    //首先得到最新版本的container_bit_table
-	//int uncheck_container=0;//用来记录属性为00的container的数目。
-
 	//int32_t* arr=(int32_t*)malloc(sizeof(int32_t)*container_size);
 	int32_t *arr=get_newest_container_bit_table(last);
    
-	int cu_bv=arr[0];
+    int k;
+    for ( k = 1; k < n*2+33; k++)
+    {
+        printf("%d", get_CBT_array(k,arr));
+        if (k%32==0)
+        {
+            printf("\n");
+        }
+    }
+
+	/*int cu_bv=arr[0];
     printf("the cu_bv is %d \n",cu_bv);
 	//int *zero_arr;
 
-    printf("test111\n");
     //用队列做！
     GSequence *zero_gsequence=g_sequence_new(free);
-    //zero_gsequence=g_sequence_new(free);
 
     int border=cce*2+33;
     //printf("border is %d\n",border );
@@ -1278,7 +1283,7 @@ void get_real_reference_time_map()
 
     //check_g_sequence(zero_gsequence);
 	check_last_container_bit_table(zero_gsequence);
-    g_sequence_free(zero_gsequence);
+    g_sequence_free(zero_gsequence);*/
     //free(arr);
 }
 
