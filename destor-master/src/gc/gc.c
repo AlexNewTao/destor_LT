@@ -494,7 +494,7 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 	get_real_reference_time_map();
 	//read_RTM_from_disk_in_gc(n);
 	//show_RTM();
-	/*printf("test 497\n");
+	printf("test 497\n");
 	GHashTable *check_arr_hash=g_hash_table_new_full(g_int_hash, g_int_equal, free,NULL);
 	printf("test 499\n");
 	if (deleteversion==0)
@@ -562,7 +562,7 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 	}
 
 	Destory_RTM();
-	g_hash_table_destroy(check_arr_hash);*/
+	g_hash_table_destroy(check_arr_hash);
 	return gc_count;
 }
 
