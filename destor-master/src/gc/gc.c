@@ -301,32 +301,30 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 	return gc_count;
 }*/
 
-int64_t gc_reference_time_map_alone(int deleteversion)
+/*int64_t gc_reference_time_map_alone(int deleteversion)
 {
-	printf("11111\n");
+
 	
+	
+	int n = get_container_bit_end();
+
 	printf("the n is %d\n",n);
-
-	get_real_reference_time_map();
-
-	int *ans_arr=(int32_t*)malloc(sizeof(int32_t));
+	
+	int* ans_arr=(int32_t*)malloc(sizeof(int32_t)*n);
 	int k;
 	for (k = 0; k < n; k++)
 	{
 		ans_arr[k]=0;
 	}
 
-	printf("222222\n");
+	get_real_reference_time_map();
 
-	int n = get_container_bit_end();
-	//得到实际的RTM
-	
-	//show_RTM();
-	printf("aaa\n");
+	printf("222222319 \n");
+
+	show_RTM();
+	printf("aaa 324\n");
 
 	printf("111111111111111111\n");
-	
-	
 	printf("ccc\n");
 	if (deleteversion==0)
 	{
@@ -354,14 +352,14 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 	{
 		printf("ee355\n");
 
-		int *check_arr=get_merge_container_bit_table(deleteversion);
+		int *new_check_arr=get_merge_container_bit_table(deleteversion);
 
 		int i;
 		printf("ee359\n");
 		int j=0;
 		for (i= 33; i <= n*2; i=i+2)
 		{
-			if ((get_CBT_array(i,check_arr)==1)||(get_CBT_array(i+1,check_arr)==1))
+			if ((get_CBT_array(i,new_check_arr)==1)||(get_CBT_array(i+1,new_check_arr)==1))
 			{
             	ans_arr[j]=(i-33)/2;
             	j=j+1;
@@ -396,7 +394,10 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 			}
 		}
 
+		//free(new_check_arr);
+
 	}
+	//free(ans_arr);
 	Destory_RTM();
 	
 	return gc_count;
@@ -418,7 +419,108 @@ int array_contains(int check,int *array,int border)
 	{
 		return 0;
 	}
+}*/
+
+
+int64_t gc_reference_time_map_alone(int deleteversion)
+{
+
+	
+	
+	int n = get_container_bit_end();
+
+	printf("the n is %d\n",n);
+	
+	int *new_check_arr=get_merge_container_bit_table(deleteversion);
+
+	/*int* ans_arr=(int32_t*)malloc(sizeof(int32_t)*n);
+	int k;
+	for (k = 0; k < n; k++)
+	{
+		ans_arr[k]=0;
+	}*/
+
+	/*get_real_reference_time_map();
+
+	if (deleteversion==0)
+	{
+		struct RTMdata *htemp;
+		htemp = RTMhead;
+		while(htemp!=NULL)
+		{
+			int i=0;
+			while(i<htemp->len)
+			{
+				if (htemp->rtm[i]==deleteversion)
+				{       		
+					gc_count=gc_count+1;
+				}
+				else
+				{
+					htemp->rtm[i]=0;
+				}
+				i=i+1;
+			}
+			htemp = htemp->next;
+		}
+	}
+	else
+	{
+		printf("ee355\n");
+
+		int *new_check_arr=get_merge_container_bit_table(deleteversion);
+
+		int i;
+		printf("ee359\n");
+		int j=0;
+		for (i= 33; i <= n*2; i=i+2)
+		{
+			if ((get_CBT_array(i,new_check_arr)==1)||(get_CBT_array(i+1,new_check_arr)==1))
+			{
+            	ans_arr[j]=(i-33)/2;
+            	j=j+1;
+			}
+		}
+		printf("ee369\n");
+
+		struct RTMdata *htemp;
+		htemp = RTMhead;
+		while(htemp!=NULL)
+		{
+			if(array_contains(htemp->id,ans_arr,n)==1)
+			{
+				htemp = htemp->next;
+			}
+			else
+			{
+				int i=0;
+				while(i<htemp->len)
+				{
+					if (htemp->rtm[i]==deleteversion)
+					{       		
+						gc_count=gc_count+1;
+					}
+					else
+					{
+						htemp->rtm[i]=0;
+					}
+					i=i+1;
+				}
+				htemp = htemp->next;
+			}
+		}
+
+		//free(new_check_arr);
+
+	}
+	//free(ans_arr);
+	Destory_RTM();
+	*/
+	return gc_count;
 }
+
+
+
 /*int64_t gc_reference_time_map_alone(int deleteversion)
 {
 
@@ -636,8 +738,9 @@ int64_t gc_reference_time_map_patch(int deleteversion)
 
 	get_real_reference_time_map();//得到实际的RTM
 	
+	printf("640\n");
 	show_RTM();
-
+	printf("642\n");
 	struct RTMdata *htemp;
 	htemp = RTMhead;
 	while(htemp!=NULL)
