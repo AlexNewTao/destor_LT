@@ -458,7 +458,7 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 	}*/
 
 
-	int *new_check_arr3=get_container_bit_table(4);
+/*	int *new_check_arr3=get_container_bit_table(4);
 
 	printf("\n");
 	int s;
@@ -472,12 +472,12 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 		}
 	}
 
-	printf("\n");
+	printf("\n");*/
 
 	int *new_check_arr=get_merge_container_bit_table(deleteversion);
 
 
-	printf("\n");
+	/*printf("\n");
 	int i;
 
 	for ( i = 1; i < n*2+33; i++)
@@ -489,14 +489,14 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 		}
 	}
 
-	printf("\n");
+	printf("\n");*/
 
 	get_real_reference_time_map();
 	//read_RTM_from_disk_in_gc(n);
 	//show_RTM();
-	printf("test 497\n");
+	
 	GHashTable *check_arr_hash=g_hash_table_new_full(g_int_hash, g_int_equal, free,NULL);
-	printf("test 499\n");
+	
 	if (deleteversion==0)
 	{
 		struct RTMdata *htemp;
@@ -785,9 +785,9 @@ int64_t gc_reference_time_map_patch(int deleteversion)
 
 	get_real_reference_time_map();//得到实际的RTM
 	
-	printf("640\n");
-	show_RTM();
-	printf("642\n");
+	
+	//show_RTM();
+	
 	struct RTMdata *htemp;
 	htemp = RTMhead;
 	while(htemp!=NULL)

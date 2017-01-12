@@ -1152,7 +1152,7 @@ void check_last_container_bit_table(GSequence *seq,int quit)
 
     last=last+1;
 
-    printf("last now is %d\n",last);
+    //printf("last now is %d\n",last);
 
     int* check_arr=get_newest_container_bit_table(last);
     
@@ -1170,7 +1170,7 @@ void check_last_container_bit_table(GSequence *seq,int quit)
     {
         int *pos=g_sequence_get(iter);
 
-        printf("aaaa%d\n", *pos);
+        ///printf("aaaa%d\n", *pos);
         int m,n;
         m=get_CBT_array(*pos,check_arr);
         n=get_CBT_array(*pos+1,check_arr);
@@ -1197,7 +1197,7 @@ void check_last_container_bit_table(GSequence *seq,int quit)
     printf("g_sequence_get_length is %d\n",g_sequence_get_length(zero_new_gsequence));
     if(g_sequence_get_length(zero_new_gsequence)!=0)
     {
-        printf("aaaaaaa\n");
+        
         check_last_container_bit_table(zero_new_gsequence,quit);
     }
 
@@ -1212,7 +1212,7 @@ void get_real_reference_time_map()
 {
     int cce=get_container_bit_end();
     
-    printf("the ans is %d\n",cce);
+    //printf("the ans is %d\n",cce);
 	//read_RTM_from_disk();
     read_RTM_from_disk_in_gc(cce);
 
@@ -1222,7 +1222,7 @@ void get_real_reference_time_map()
 	//int32_t* arr=(int32_t*)malloc(sizeof(int32_t)*container_size);
 	int32_t *arr=get_newest_container_bit_table(last);
    
-    int k;
+   /* int k;
     for ( k = 1; k < cce*2+33; k++)
     {
         printf("%d", get_CBT_array(k,arr));
@@ -1230,10 +1230,10 @@ void get_real_reference_time_map()
         {
             printf("\n");
         }
-    }
+    }*/
 
 	int cu_bv=arr[0];
-    printf("the cu_bv is %d \n",cu_bv);
+    //printf("the cu_bv is %d \n",cu_bv);
 	//int *zero_arr;
 
     //用队列做！
