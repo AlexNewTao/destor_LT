@@ -252,7 +252,7 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 	{
 		ans_arr[k]=0;
 	}*/
-	/*GHashTable *check_arr_hash=g_hash_table_new_full(g_int_hash, g_int_equal, free,NULL);
+/*	GHashTable *check_arr_hash=g_hash_table_new_full(g_int_hash, g_int_equal, free,NULL);
 
 	int *check_arr=get_merge_container_bit_table(deleteversion);
 	
@@ -431,8 +431,7 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 
 	printf("the n is %d\n",n);
 	
-
-	int *new_check_arr1=get_container_bit_table(1);
+/*	int *new_check_arr1=get_container_bit_table(1);
 
 	int j;
 
@@ -443,9 +442,9 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 		{
 			printf("\n");
 		}
-	}
+	}*/
 
-	printf("\n");
+	/*printf("\n");
 	int *new_check_arr2=get_container_bit_table(2);
 
 	int k;
@@ -456,10 +455,10 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 		{
 			printf("\n");
 		}
-	}
+	}*/
 
 
-	int *new_check_arr3=get_container_bit_table(3);
+	/*int *new_check_arr3=get_container_bit_table(3);
 
 	printf("\n");
 	int s;
@@ -473,9 +472,7 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 		}
 	}
 
-	printf("\n");
-
-
+	printf("\n");*/
 
 	int *new_check_arr=get_merge_container_bit_table(deleteversion);
 
@@ -494,18 +491,12 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 
 	printf("\n");
 
-
-
-
-	/*int* ans_arr=(int32_t*)malloc(sizeof(int32_t)*n);
-	int k;
-	for (k = 0; k < n; k++)
-	{
-		ans_arr[k]=0;
-	}*/
-
-	/*get_real_reference_time_map();
-
+	get_real_reference_time_map();
+	//read_RTM_from_disk_in_gc(n);
+	show_RTM();
+	printf("test 497\n");
+	GHashTable *check_arr_hash=g_hash_table_new_full(g_int_hash, g_int_equal, free,NULL);
+	printf("test 499\n");
 	if (deleteversion==0)
 	{
 		struct RTMdata *htemp;
@@ -530,28 +521,22 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 	}
 	else
 	{
-		printf("ee355\n");
-
-		int *new_check_arr=get_merge_container_bit_table(deleteversion);
 
 		int i;
-		printf("ee359\n");
-		int j=0;
-		for (i= 33; i <= n*2; i=i+2)
+		for (i= 33; i < n*2+33; i=i+2)
 		{
 			if ((get_CBT_array(i,new_check_arr)==1)||(get_CBT_array(i+1,new_check_arr)==1))
 			{
-            	ans_arr[j]=(i-33)/2;
-            	j=j+1;
+            	int32_t* check_arr_hash_id=(int32_t*)malloc(sizeof(int32_t));
+            	*check_arr_hash_id=(i-33)/2;;
+            	g_hash_table_insert(check_arr_hash,check_arr_hash_id,check_arr_hash_id);
 			}
 		}
-		printf("ee369\n");
-
 		struct RTMdata *htemp;
 		htemp = RTMhead;
 		while(htemp!=NULL)
 		{
-			if(array_contains(htemp->id,ans_arr,n)==1)
+			if(g_hash_table_contains(check_arr_hash,&htemp->id))
 			{
 				htemp = htemp->next;
 			}
@@ -574,12 +559,10 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 			}
 		}
 
-		//free(new_check_arr);
-
 	}
-	//free(ans_arr);
+
 	Destory_RTM();
-	*/
+	g_hash_table_destroy(check_arr_hash);
 	return gc_count;
 }
 
