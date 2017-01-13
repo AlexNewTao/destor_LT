@@ -406,15 +406,11 @@ void update_container_bit_table_and_RTM(int backupversion)
 }
 
 
-
-//根据container的id号，得到container相对于上一个版本的属性
 int get_attribute(int64_t id)
 {
 	
 	int start=get_shift_by_id(id);
-    //printf("the star index_bit is %d\n",get_index_bit(start));
-
-    //printf("the start is %d\n", start);
+ 
 	int end=get_next_shift_by_id(id)-1;
     if ((start==0)||(end==0))
     {
@@ -499,9 +495,6 @@ void write_container_bit_table_to_disk()
     sds CBTpath = sdsdup(destor.working_directory);
     CBTpath = sdscat(CBTpath, "/container_bit_table.cbt");
 
-    //sds cbt_fname = sdsdup(CBTpath);
-    //cbt_fname = sdscat(cbt_fname, "container_bit_table");
-
     FILE *fp;
     if((fp = fopen(CBTpath, "a+"))) 
     {
@@ -512,17 +505,6 @@ void write_container_bit_table_to_disk()
     sdsfree(CBTpath);
     NOTICE("write container bit table to disk successfully");
      
-
- /*   printf("write container_bit_table is as follow!\n");
-    int k;
-    for (k = 1; k <=1000; k++)
-    {
-        printf(" %d",get_cbt_bit(k));
-        if (k%32==0)
-        {
-            printf("\n");
-        }
-    }*/
 }
 
 
@@ -596,10 +578,8 @@ int* get_first_container_bit_table()
     
     sds CBTpath = sdsdup(destor.working_directory);
     CBTpath = sdscat(CBTpath, "/container_bit_table.cbt");
-    printf("11\n");
+
     int32_t* new_cbt=(int32_t* )malloc(sizeof(CBT));
-    printf("22\n");
-    printf("ccc680\n");
     if ((fp = fopen(CBTpath, "r"))) {
         
         fseek(fp,0,SEEK_SET);
@@ -610,7 +590,6 @@ int* get_first_container_bit_table()
    
     sdsfree(CBTpath);
 
-    //NOTICE("get newest container bit table successfully");
     return new_cbt;
 }
 
@@ -621,9 +600,6 @@ int* get_container_bit_table(int times)
 
     sds CBTpath = sdsdup(destor.working_directory);
     CBTpath = sdscat(CBTpath, "/container_bit_table.cbt");
-
-    //int* cbt=(int32_t*)malloc(sizeof(CBT));
-    //printf("sizeof(CBT)%d\n",sizeof(CBT) );
     int32_t* new_cbt=(int32_t* )malloc(sizeof(CBT));
  
     if ((fp = fopen(CBTpath, "r"))) {
@@ -638,49 +614,15 @@ int* get_container_bit_table(int times)
    
     sdsfree(CBTpath);
 
-    //NOTICE("get newest container bit table successfully");
     return new_cbt;
 }
 
-/*int* get_newest_container_bit_map(int backupversion)
-{
-	
-    sds CBTpath = sdsdup(destor.working_directory);
-    CBTpath = sdscat(CBTpath, "/container_bit_table.cbt");
 
-    if ((fp = fopen(CBTpath, "r"))) {
-        if (fseek(fp,-container_size,SEEK_END))
-        {
-        	fread(&cbt, container_size,1, fp);
-        }
-        
-        fclose(fp);
-    }
-
-    sdsfree(CBTpath);
-    
-    NOTICE("get newest container bit table successfully");
-
-    return cbt;
-
-}*/
 //===============================reference_time_map=====================
 
-/*struct RTMdata
-{
-	int64_t id;
-	int16_t len;
-	int16_t *rtm;
-	struct RTMdata* next;
-};*/
 
 struct RTMdata *RTMhead;
 
-/*struct RTMlist
-{
-	RTMdata rtmdata;
-	struct RTMlist *next;
-};*/
 
 void Init_RTM()
 {
@@ -698,14 +640,6 @@ void Init_RTM()
 void Init_RTMlist()
 {
     RTMhead=NULL;
-/*    RTMhead = (struct RTMdata *)malloc(sizeof(struct RTMdata));   
-    if(RTMhead== NULL)                      
-        printf("FAIL ALLOC SPACE!\n");
-    RTMhead->id=0;
-    RTMhead->len=0;
-    RTMhead->rtm=0;
-    RTMhead->next=NULL;
-*/
     printf("Init_RTMlist successfully!\n");             
 }
 
@@ -715,34 +649,18 @@ void write_RTM_to_disk()
     RTMpath = sdscat(RTMpath, "/reference_time_map.rtm");
 
     FILE *fp;
-    //printf("w1w1w1wsw1w1w1w1w1w\n");
     if((fp = fopen(RTMpath, "w+"))) 
     {
         
     	while(RTMhead!=NULL)
     	{
-            //printf("w");
+            
     		fwrite(&RTMhead->id, sizeof(int64_t), 1, fp);
-            //printf("RTMid %d ",RTMhead->id);
+           
     		fwrite(&RTMhead->len, sizeof(int16_t), 1, fp);
-            //printf("RTMlen %d ",RTMhead->len);
+           
             
             fwrite(RTMhead->rtm, sizeof(int16_t), RTMhead->len, fp);
-            
-          /*  int i=0;
-            while(i<RTMhead->len)
-            {
-                fwrite(&RTMhead->rtm[i], sizeof(int16_t), 1, fp);
-                i++;
-            }*/
-
-       /*  上面两种写入数据的方式一样的！
-           int j;
-            for (j = 0; j < 10; j++)
-            {
-                printf("RTM %d",RTMhead->rtm[j]);
-            }
-            printf("\n");*/
 
     		struct RTMdata* tmp = RTMhead;
     		free(tmp->rtm);
