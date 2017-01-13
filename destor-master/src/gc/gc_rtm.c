@@ -684,7 +684,6 @@ void read_RTM_from_disk()
     RTMhead = NULL;
     if((fp = fopen(RTMpath, "r+"))) 
     {
-        //printf("read2read2read2read2read2\n");
     	struct RTMdata* tmp;
         struct RTMdata* tmp1;
         int i=0;
@@ -694,10 +693,6 @@ void read_RTM_from_disk()
             tmp = (struct RTMdata*)malloc(sizeof(struct RTMdata));
             fread(&tmp->id, sizeof(tmp->id), 1, fp);
             fread(&tmp->len, sizeof(tmp->len), 1, fp);
-           /* int16_t *array= (int16_t*)malloc(sizeof(int16_t)*(tmp->len));
-            fread(array, sizeof(int16_t), tmp->len, fp);
-            tmp->rtm=array;*/
-            
             tmp->rtm=(int16_t*)malloc(sizeof(int16_t)*(tmp->len));
             
             fread(tmp->rtm, sizeof(int16_t), tmp->len, fp);
@@ -715,48 +710,28 @@ void read_RTM_from_disk()
         fclose(fp);
     }
     sdsfree(RTMpath);
-/*
-    struct RTMdata *Rtemp=RTMhead;
-    //int i=0;
-    while(Rtemp!=NULL)
-    {
-        int16_t k=Rtemp->len;
-        int16_t s;
-        for (s = 0; s < 10; s++)
-        {
-            printf("%d",Rtemp->rtm[s]);
-        }
-        //printf("    %d",i);
-        printf("rrrrrrrrrrrrrrrrrrrrrrrrrrrr\n");
-        Rtemp=Rtemp->next;
-        //i=i+1;
-    }*/
     NOTICE("read_RTM_from_disk successfully");
 
-    //show_RTM();
 }
 
-
-//单链表的初始化
- 
 
 
 
 void RTMlist_AddEnd (struct RTMdata* rtmdata)
 {
     struct RTMdata *node,*htemp;
-    if (!(node=(struct RTMdata *)malloc(sizeof(struct RTMdata))))//分配空间
+    if (!(node=(struct RTMdata *)malloc(sizeof(struct RTMdata))))
     {
-        printf("内存分配失败！\n");
+        printf("fail alloc space！\n");
         return NULL;
     }
     else
     {
-        node->id=rtmdata->id;//保存数据
-        node->rtm=rtmdata->rtm;//保存数据
-        node->len=rtmdata->len;//保存数据
+        node->id=rtmdata->id;
+        node->rtm=rtmdata->rtm;
+        node->len=rtmdata->len;
 
-        node->next=NULL;//设置结点指针为空，即为表尾；
+        node->next=NULL;
         if (RTMhead==NULL)
         {
             RTMhead=node;
@@ -800,35 +775,6 @@ void update_reference_time_map(int64_t id)
 		tmphead=tmphead->next;
 	}
 }
-
-
-/*void change_RTM_backupversition(RTMlist *head,int backupversion,int n,containerid id)
-{
-	int* arr=get_RTMarray_accord_containerid(id,head);
-	arr[n]=backupversion;
-}*/
-
-
-/*int *get_RTMarray_accord_containerid(containerid id,RTMlist *head)
-{
-	RTMlist *htemp;
-	htemp=head;
-	while(htemp)
-	{
-		if (htemp->rtmdata->id==id)
-		{
-			return htemp->rtmdata.rtm;
-		}
-	}
-	return NULL;
-}
-*/
-
-
-
-//得到实际的reference_time_map
-
-//一定要注意，container bit table的顺序和RTM的顺序是一致的。
 
 
 int* get_newest_container_bit_table(int times)
@@ -875,23 +821,6 @@ void show_cbt()
 
 }
 
-/*int get_CBT(int n)
-{
-	int index_loc;
-	int bit_loc;
-	index_loc=n>>SHIFT;//等价于n/32。
-	bit_loc=n&MASK;//等价于n%32。
-	return CBT[index_loc]<<bit_loc;
-}*/
-
-/*int get_CBT_array(int n,int *array)
-{
-	int index_loc;
-	int bit_loc;
-	index_loc=n>>SHIFT;//等价于n/32。
-	bit_loc=n&MASK;//等价于n%32。
-	return array[index_loc]<<bit_loc;
-}*/
 
 int32_t get_CBT_array(int32_t n,int *array)
 {
@@ -902,7 +831,6 @@ int32_t get_CBT_array(int32_t n,int *array)
     if (check==0)
     {
         index_loc=(n>>SHIFT)-1;
-        //index_bit[index_loc]|=(1<<31);
         flag=array[index_loc]&(1<<31);
     }
     else
@@ -944,22 +872,21 @@ void set_CBT_array(int n,int zero_or_one,int *array)
     }
 }
 
-//n means the number of n-th container 
+
 void update_RTM_to_same_backupversion(int n,int backupversion)
 {
-	//printf("a1a1a1");
+	
 	struct RTMdata *htemp;
 	htemp=RTMhead;
 
 	int i=0;
-	//while((i<n)&&(htemp->next!=NULL))
+
     while(i<n)
 	{
 		htemp=htemp->next;
         i=i+1;
 	}
-    //printf("the i is %d ", i);
-    //printf(" a2a2a2 ");
+
 	int j=0;
 	while((htemp->rtm[j]!=backupversion)&&(j<htemp->len))
 	{
@@ -983,7 +910,6 @@ static void check_g_sequence(GSequence *seq)
         int *pos=g_sequence_get(new_iter);
         
         new_iter=g_sequence_iter_next(new_iter);
-
         printf(" %d ",*pos);
     }
 }
@@ -1036,10 +962,8 @@ void check_last_container_bit_table(GSequence *seq,int quit)
             iter=g_sequence_iter_next(iter);
         }
     }
-    check_g_sequence(zero_new_gsequence);
-    //GSequenceIter* new_iter=g_sequence_get_begin_iter(zero_new_gsequence);
-    //GSequenceIter* new_end = g_sequence_get_end_iter(zero_new_gsequence);
-    printf("g_sequence_get_length is %d\n",g_sequence_get_length(zero_new_gsequence));
+    //check_g_sequence(zero_new_gsequence);
+    //printf("g_sequence_get_length is %d\n",g_sequence_get_length(zero_new_gsequence));
     if(g_sequence_get_length(zero_new_gsequence)!=0)
     {
         
@@ -1047,7 +971,7 @@ void check_last_container_bit_table(GSequence *seq,int quit)
     }
 
     //g_sequence_free(zero_new_gsequence);
-    //free(check_arr);
+
 }
 
 
@@ -1057,47 +981,29 @@ void get_real_reference_time_map()
 {
     int cce=get_container_bit_end();
     
-    //printf("the ans is %d\n",cce);
-	//read_RTM_from_disk();
+
     read_RTM_from_disk_in_gc(cce);
 
     //show_RTM();
-    //printf("container_count_start %d\n",container_count_start );
-
-	//int32_t* arr=(int32_t*)malloc(sizeof(int32_t)*container_size);
 	int32_t *arr=get_newest_container_bit_table(last);
    
-   /* int k;
-    for ( k = 1; k < cce*2+33; k++)
-    {
-        printf("%d", get_CBT_array(k,arr));
-        if (k%32==0)
-        {
-            printf("\n");
-        }
-    }*/
 
 	int cu_bv=arr[0];
-    //printf("the cu_bv is %d \n",cu_bv);
-	//int *zero_arr;
 
-    //用队列做！
+
+
     GSequence *zero_gsequence=g_sequence_new(free);
 
     int border=cce*2+33;
-    //printf("border is %d\n",border );
-    //for(i=33; i<=container_size*32; i+2)
+
     int i=33;
     int j=0;
 	while(i<border)
 	{
-		//container_count_gc++;
-        //printf("1");
+
         int m,n;
         m=get_CBT_array(i,arr);
         n=get_CBT_array(i+1,arr);
-        
-        //printf("m =%d, n=%d, i =%d,j=%d\n",m,n,i,j);
         
         if ((m==0&&n==1)||(m==1&&n==0))
         {
@@ -1105,8 +1011,7 @@ void get_real_reference_time_map()
         }
         else if (m==0&&n==0)
         {
-        
-            //printf("bb\n");
+    
             int* s=(int32_t*)malloc(sizeof(int32_t));
             *s=j;
             g_sequence_append(zero_gsequence,s);
@@ -1124,7 +1029,7 @@ void get_real_reference_time_map()
 	check_last_container_bit_table(zero_gsequence,cu_bv+1);
     
     g_sequence_free(zero_gsequence);
-    //free(arr);
+
 }
 
 
@@ -1168,13 +1073,10 @@ void write_container_count_end_to_disk()
     sds ccepath = sdsdup(destor.working_directory);
     ccepath = sdscat(ccepath, "/container_count_end.cce");
 
-    //sds cbt_fname = sdsdup(CBTpath);
-    //cbt_fname = sdscat(cbt_fname, "container_bit_table");
-    //printf("1111111111\n");
     FILE *fp;
     if((fp = fopen(ccepath, "w"))) 
     {
-        /* Read if exists. */
+    
         fwrite(&container_count_end, sizeof(int64_t), 1, fp);
         fclose(fp);
     }
