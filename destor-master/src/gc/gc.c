@@ -190,6 +190,43 @@ void get_delete_message()
 	printf("the collection  size is %ld MB\n", size);
 }
 
+
+int64_t gc_reference_time_map_patch(int deleteversion)
+{
+	//int *cbt;
+	//cbt=get_container_bit_table(deleteversion);//得到删除版本的container_bit_map
+
+	get_real_reference_time_map();//得到实际的RTM
+	
+	//show_RTM();
+	
+	struct RTMdata *htemp;
+	htemp = RTMhead;
+	while(htemp!=NULL)
+	{
+		int i=0;
+			//printf("gc111\n");
+		while(i<htemp->len)
+		{
+			if (htemp->rtm[i]<=deleteversion)
+			{       		
+				gc_count=gc_count+1;
+			}
+			else
+			{
+				htemp->rtm[i]=0;
+			}
+			i=i+1;
+		}
+		htemp = htemp->next;
+	}
+
+	Destory_RTM();
+	//Destory_gc_list();
+	
+	return gc_count;
+}
+
 /*//采用RTM方法进行垃圾回收
 int64_t gc_reference_time_map_alone(int deleteversion)
 {
@@ -458,7 +495,7 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 	}*/
 
 
-/*	int *new_check_arr3=get_container_bit_table(4);
+/*	int *new_check_arr3=get_container_bit_table(3);
 
 	printf("\n");
 	int s;
@@ -778,40 +815,5 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 }*/
 
 
-int64_t gc_reference_time_map_patch(int deleteversion)
-{
-	//int *cbt;
-	//cbt=get_container_bit_table(deleteversion);//得到删除版本的container_bit_map
 
-	get_real_reference_time_map();//得到实际的RTM
-	
-	
-	//show_RTM();
-	
-	struct RTMdata *htemp;
-	htemp = RTMhead;
-	while(htemp!=NULL)
-	{
-		int i=0;
-			//printf("gc111\n");
-		while(i<htemp->len)
-		{
-			if (htemp->rtm[i]<=deleteversion)
-			{       		
-				gc_count=gc_count+1;
-			}
-			else
-			{
-				htemp->rtm[i]=0;
-			}
-			i=i+1;
-		}
-		htemp = htemp->next;
-	}
-
-	Destory_RTM();
-	//Destory_gc_list();
-	
-	return gc_count;
-}
 

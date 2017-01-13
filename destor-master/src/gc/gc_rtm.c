@@ -26,32 +26,20 @@ void init_id_shift()
 {
     globle_shift=1;
     ishead=NULL;
-	/*struct _id_shift_type* head=NULL;
-	head=(struct _id_shift_type *)malloc(sizeof(struct _id_shift_type));
-	head->id_shift_data.container_id=0;
-	head->id_shift_data.chunk_shift=0;
-	head->next=NULL;*/
 	printf("init_id_shift successfully!\n");
 	
 }
-
-
-/*static inline void free_id_hash(int64_t* key){
-    free(key);
-}*/
 
 
 void init_id_shift_hash()
 {
 	id_shift_hash = g_hash_table_new_full(g_int64_hash, g_int64_equal, free,NULL);
 	printf("init id_shift_hash successfully!\n");
-	
 }
 
 void destory_id_shift_hash()
 {
-    //g_hash_table_remove_all(id_shift_hash);
-	//g_hash_table_destroy(id_shift_hash);id_shift_hash = NULL;
+	//g_hash_table_destroy(id_shift_hash);
 }
 
 
@@ -143,16 +131,9 @@ int get_next_shift_by_id(int64_t id)
         htemp=htemp->next;
     }
     if(htemp->next==NULL)
-    {
-       /* if (htemp->id_shift_data.container_id==id)
-        {
-            //struct containerMeta* cm =retrieve_container_meta_by_id(id);
-            int32_t chunk_len=htemp->id_shift_data.chunk_num;
-            return (htemp->id_shift_data.chunk_shift)+chunk_len;
-        }*/  
+    {  
         int ans=htemp->id_shift_data.chunk_shift+htemp->id_shift_data.chunk_num;
         return ans;
-
     }
 
     printf("can't find the shift!worry!\n");
@@ -172,15 +153,12 @@ int get_next_shift_by_id(int64_t id)
 #define SHIFT 5
 #define MASK 32
 
-//#define index_bit_size  1<<20
 
-//int32_t index_bit[index_bit_size];
 void init_index_bit()
 {
-	//index_bit[index_bit_size]={0};
+	index_bit[index_bit_size]={0};
 	printf("index_bit init successfully!\n");
 }
-
 
 void set_index_bit(int32_t n)
 {
@@ -211,7 +189,7 @@ int32_t get_index_bit(int32_t n)
     if (check==0)
     {
         index_loc=(n>>SHIFT)-1;
-        //index_bit[index_loc]|=(1<<31);
+        
         flag=index_bit[index_loc]&(1<<31);
     }
     else
