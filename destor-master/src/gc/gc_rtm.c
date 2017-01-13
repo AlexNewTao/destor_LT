@@ -1127,7 +1127,6 @@ void  read_RTM_from_disk_in_gc(int broad)
 
     NOTICE("read_RTM_from_disk in gc successfully");
 
-    //return RTMhead;
 }
 
 
