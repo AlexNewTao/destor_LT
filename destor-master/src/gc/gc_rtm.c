@@ -217,14 +217,6 @@ int check_index_bit_equal_one(int start,int end)
  	int i=start;
 	int j=start+1;
 
- /*   int k;
-    for (k = start; k <= end; k++)
-    {
-        printf("%d",get_index_bit(k));
-    }
-    printf("\n");*/
-
-
 	while(i<end) 
 	{
 		if (get_index_bit(i)==1)
@@ -269,12 +261,8 @@ int check_index_bit_equal_one(int start,int end)
 //=============================container_bit_table==========================
 
 
-/*#define container_size 1<<16
-int32_t CBT[container_size];*/
 void init_container_bit_table(int backupversion)
 {
-	
-	//CBT[container_size]={0};
 	CBT[0]=backupversion;
 	printf("init container_bit_table successfully\n");
 }
@@ -288,7 +276,6 @@ int32_t get_cbt_bit(int32_t n)
     if (check==0)
     {
         index_loc=(n>>SHIFT)-1;
-        //index_bit[index_loc]|=(1<<31);
         flag=CBT[index_loc]&(1<<31);
     }
     else
@@ -304,7 +291,6 @@ int32_t get_cbt_bit(int32_t n)
     else
         return 1;
 }
-
 
 
 
@@ -375,7 +361,7 @@ void show_RTM()
 
 void update_container_bit_table_and_RTM(int backupversion)
 {
-    //printf("start update_CBT RTM!\n");
+
 	struct _id_shift_type *htemp;
 	htemp=ishead;
 	if(CBT[0]!=backupversion)
@@ -386,14 +372,11 @@ void update_container_bit_table_and_RTM(int backupversion)
     {
 
     	int64_t id=htemp->id_shift_data.container_id;
-        //printf("container_count_start is %ld\n", container_count_start);
-        //printf("the id is %ld\n",id );
-        //printf("the times of first occur!!!!!!\n");
+
 
         int cbt_shift=id*2+33;
         int attribute=get_attribute(id);
             
-        //printf("attribute is :%d\n",attribute);
         update_container_bit_table_attribute(cbt_shift,attribute);
         
     	if (attribute==1)
@@ -404,14 +387,10 @@ void update_container_bit_table_and_RTM(int backupversion)
         htemp=htemp->next;
        
     }
-    //int64_t num_new_add=get_container_count_add();
+   
 
     int num_new_add=container_count_end-container_count_start;
 
-    //printf(" num_new_add%lld\n", num_new_add);
-
-    //printf("container_count_start is %ld\n", container_count_start);
-    //printf("container_count_end is %ld\n", container_count_end);
 
   	if (num_new_add>0)
     {
@@ -424,36 +403,6 @@ void update_container_bit_table_and_RTM(int backupversion)
         }  
     }
     printf("update container_bit_table successful!\n");
-
- /*   printf("update container_bit_table is as follow!\n");
-    int k;
-    for (k = 1; k <=1000; k++)
-	{
-		printf(" %d",get_cbt_bit(k));
-		if (k%32==0)
-		{
-			printf("\n");
-		}
-	}*/
-
-/*	printf("update reference time map as follow!\n");
-	//struct RTMdate *Rtemp;
-	struct RTMdata *Rtemp=RTMhead;
-	int i=0;
-	while(Rtemp!=NULL)
-	{
-		int16_t k=Rtemp->len;
-		int16_t s;
-		for (s = 0; s < 20; s++)
-		{
-			printf("%d",Rtemp->rtm[s]);
-		}
-        printf("    %d",i);
-		printf("sssssssssssssss\n");
-		Rtemp=Rtemp->next;
-        i=i+1;
-	}*/
-    //show_RTM();
 }
 
 
