@@ -156,7 +156,7 @@ int get_next_shift_by_id(int64_t id)
 
 void init_index_bit()
 {
-	index_bit[index_bit_size]={0};
+	index_bit[index_bit_size];
 	printf("index_bit init successfully!\n");
 }
 
@@ -797,7 +797,7 @@ int* get_newest_container_bit_table(int times)
 
     sdsfree(CBTpath);
 
-    NOTICE("get newest container bit table successfully");
+    //NOTICE("get newest container bit table successfully");
     
     return cbt;
 }
