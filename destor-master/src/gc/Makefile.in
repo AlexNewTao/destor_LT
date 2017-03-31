@@ -242,7 +242,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 noinst_LIBRARIES = libgc.a
-libgc_a_SOURCES = gc_rtm.c
+libgc_a_SOURCES = gc_rtm.c 
 all: all-am
 
 .SUFFIXES:

@@ -11,3 +11,5 @@ rm -f ${DIR}/destor.stat
 rm -f ${DIR}/manifest
 rm -f ${DIR}/container_bit_table.cbt
 rm -f ${DIR}/reference_time_map.rtm
+rm -f ${DIR}/container_count_end.cce
+rm -f ${DIR}/gc_list.gc

@@ -62,6 +62,10 @@ void init_jcr(char *path) {
 	jcr.read_chunk_time = 0;
 	jcr.write_chunk_time = 0;
 
+	jcr.gc_time = 0;
+	jcr.get_real_rtm_time = 0;
+	jcr.get_gc_list_time = 0;
+
 	jcr.read_container_num = 0;
 }
 

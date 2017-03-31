@@ -22,11 +22,11 @@ struct gc_list_type *gchead=NULL;
 void Destory_gc_list();
 void gc_list_AddEnd (struct gc_list_type *gc_data);
 
-void start_garbage_collection();
+//void start_garbage_collection();
 
-void garbage_collection_method_selection();
+//void garbage_collection_method_selection();
 
-void gc_reference_time_map();
+void gc_reference_time_map(int deleteversion);
 
 void get_delete_message();
 

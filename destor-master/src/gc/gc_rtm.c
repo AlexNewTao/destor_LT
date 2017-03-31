@@ -979,6 +979,9 @@ void check_last_container_bit_table(GSequence *seq,int quit)
 
 void get_real_reference_time_map()
 {
+    TIMER_DECLARE(1);
+    TIMER_BEGIN(1);
+
     int cce=get_container_bit_end();
     
 
@@ -1030,6 +1033,7 @@ void get_real_reference_time_map()
     
     g_sequence_free(zero_gsequence);
 
+    TIMER_END(1, jcr.get_real_rtm_time);
 }
 
 

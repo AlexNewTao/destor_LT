@@ -21,6 +21,7 @@ time: 2016.11
 #include "gc_rtm.h"
 #include "gc.h"
 #include "../destor.h"
+#include "../jcr.h"
 
 static int64_t gc_count=0;
 /*struct gc_list_type{
@@ -111,6 +112,7 @@ void gc_list_AddEnd(struct gc_list_type* gc_data)
     }
 }*/
 
+
 void gc_reference_count()
 {
 	printf("we do garbage in the method of gc_reference_count!\n");
@@ -121,7 +123,7 @@ void gc_mark_and_sweep()
 }
 //  3 选择不同的垃圾回收机制，给其他的垃圾回收方法留有接口
 
-void garbage_collection_method_selection()
+/*void garbage_collection_method_selection()
 {
 	printf("choose the method to garbage collection\n");
 	printf("1:means reference_time_map  method\n");
@@ -144,26 +146,23 @@ void garbage_collection_method_selection()
 			printf("worry choose garbage collection method!\n");
 	}
 
-}
+}*/
 
-void start_garbage_collection()
+/*void start_garbage_collection()
 {
 	garbage_collection_method_selection();
 
-}
+}*/
 
 
-void gc_reference_time_map()
+void gc_reference_time_map(int deleteversion)
 {
-	int deleteversion;
-	printf("please input the versition you want to delete!\n");
-	scanf("%d",&deleteversion);
 
-	printf("choose the delete way\n");
-	printf("1:means delete one backupversion  \n");
-	printf("2:means delete patch!\n");
-	int deletway;
-	scanf("%d",&deletway);
+	const int deletway=2;
+
+	TIMER_DECLARE(1);
+	TIMER_BEGIN(1);
+
 	if (deletway==1)
 	{
 		gc_count=gc_reference_time_map_alone(deleteversion);
@@ -180,6 +179,22 @@ void gc_reference_time_map()
 	}
 	get_delete_message();
 	printf("finish garbage collection\n");
+
+	TIMER_END(1, jcr.gc_time);
+
+	char logfile[] = "gc.log";
+    FILE *fp = fopen(logfile, "a");
+
+    fprintf(fp, " %d %.4f %.4f %.4f %ld \n",
+    		deleteversion,
+            jcr.gc_time / 1000000,
+            jcr.get_real_rtm_time / 1000000,
+            jcr.get_gc_list_time / 1000000,
+            gc_count*4/1024);
+
+            
+    fclose(fp);
+
 }
 
 void get_delete_message()
@@ -199,7 +214,9 @@ int64_t gc_reference_time_map_patch(int deleteversion)
 	get_real_reference_time_map();//得到实际的RTM
 	
 	//show_RTM();
-	
+	TIMER_DECLARE(1);
+	TIMER_BEGIN(1);
+
 	struct RTMdata *htemp;
 	htemp = RTMhead;
 	while(htemp!=NULL)
@@ -223,6 +240,7 @@ int64_t gc_reference_time_map_patch(int deleteversion)
 
 	Destory_RTM();
 	//Destory_gc_list();
+	TIMER_END(1, jcr.get_gc_list_time);
 	
 	return gc_count;
 }
@@ -462,8 +480,7 @@ int array_contains(int check,int *array,int border)
 int64_t gc_reference_time_map_alone(int deleteversion)
 {
 
-	
-	
+
 	int n = get_container_bit_end();
 
 	printf("the n is %d\n",n);
@@ -531,6 +548,10 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 	get_real_reference_time_map();
 	//read_RTM_from_disk_in_gc(n);
 	//show_RTM();
+
+	TIMER_DECLARE(1);
+	TIMER_BEGIN(1);
+	
 	
 	GHashTable *check_arr_hash=g_hash_table_new_full(g_int_hash, g_int_equal, free,NULL);
 	
@@ -600,6 +621,9 @@ int64_t gc_reference_time_map_alone(int deleteversion)
 
 	Destory_RTM();
 	g_hash_table_destroy(check_arr_hash);
+
+	TIMER_END(1, jcr.get_gc_list_time);
+
 	return gc_count;
 }
 

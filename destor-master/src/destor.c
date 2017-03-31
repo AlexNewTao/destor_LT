@@ -22,7 +22,7 @@ extern void load_config_from_string(sds config);
 /* : means argument is required.
  * :: means argument is required and no space.
  */
-const char * const short_options = "sr::t::p::h::g";
+const char * const short_options = "sr::t::p::h::g:";
 
 struct option long_options[] = {
 		{ "state", 0, NULL, 's' },
@@ -266,6 +266,9 @@ int main(int argc, char **argv) {
 
 	int job = DESTOR_BACKUP;
 	int revision = -1;
+	int deleteversion = -1;
+	int delete_way = -1;
+
 
 	int opt = 0;
 	while ((opt = getopt_long(argc, argv, short_options, long_options, NULL))
@@ -291,7 +294,7 @@ int main(int argc, char **argv) {
 		}
 		case 'g':{
 			job = DESTOR_GARBAGE_COLLECTION;
-			printf("parementer g!\n");
+			deleteversion = atoi(optarg);
 			break;
 		}
 		default:
@@ -356,7 +359,15 @@ int main(int argc, char **argv) {
 	}
 
 	case DESTOR_GARBAGE_COLLECTION:{
-		start_garbage_collection();
+	/*	if (argc > optind) {
+			delete_way = sdsnew(argv[optind]);
+		} else {
+			fprintf(stderr, "garbage job needs a delete_way!\n");
+			usage();
+		}*/
+		//printf("the delete way is %d\n",delete_way);
+		printf("the delete version is %d\n",deleteversion);
+		gc_reference_time_map(deleteversion);
 		break;
 	}
 	

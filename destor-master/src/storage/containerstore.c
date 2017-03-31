@@ -28,6 +28,9 @@ static void* append_thread(void *arg) {
 		if (c == NULL)
 			break;
 		
+		TIMER_DECLARE(1);
+		TIMER_BEGIN(1);
+		
 		int32_t rtmlen=c->meta.chunk_num;
         struct RTMdata *temp=(struct RTMdata *)malloc(sizeof(struct RTMdata));
         temp->id=c->meta.id;
@@ -47,9 +50,6 @@ static void* append_thread(void *arg) {
       
         RTMlist_AddEnd(temp);
         //printf("append to RTM list successfully!\n");
-
-		TIMER_DECLARE(1);
-		TIMER_BEGIN(1);
 
 		write_container(c);
 
@@ -80,7 +80,7 @@ void init_container_store() {
 		exit(1);
 	}
 	container_count_start=container_count;
-	//printf("the container_count_start sss %ld \n",container_count_start);
+	printf("the container_count_start sss %ld \n",container_count_start);
 	//printf("the container_count  sss%ld \n",container_count);
 
 	sdsfree(containerfile);
@@ -112,7 +112,7 @@ void close_container_store() {
 	fwrite(&container_count, sizeof(container_count), 1, fp);
 
 
-	//printf("container_count eee is %d\n",container_count_end );
+	printf("container_count eee is %d\n",container_count_end );
 	//printf("the container_count is %ld \n",container_count);
 	fclose(fp);
 
